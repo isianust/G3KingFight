@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>武將爭霸 Sango Fighter</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Character Select Screen -->
+  <div id="charSelectScreen" class="screen">
+    <h1 class="title">武將爭霸</h1>
+    <h2 class="subtitle">Sango Fighter</h2>
+
+    <div id="modeSelect">
+      <button id="btnPvP" class="mode-btn">雙人對戰 (PvP)</button>
+      <button id="btnPvCPU" class="mode-btn">單人對戰 (vs CPU)</button>
+    </div>
+
+    <div id="charSelectPanel" class="hidden">
+      <div class="select-side">
+        <h3 id="selectLabel">P1 選擇角色</h3>
+        <div id="charGrid" class="char-grid"></div>
+      </div>
+      <div id="selectedDisplay">
+        <div class="selected-char">
+          <div class="portrait-placeholder" id="p1Portrait">P1</div>
+          <span id="p1Name">---</span>
+        </div>
+        <span class="vs-text">VS</span>
+        <div class="selected-char">
+          <div class="portrait-placeholder" id="p2Portrait">P2</div>
+          <span id="p2Name">---</span>
+        </div>
+      </div>
+      <button id="btnFight" class="fight-btn hidden">開戰！ FIGHT!</button>
+    </div>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="gameScreen" class="screen hidden">
+    <div id="hud">
+      <div class="player-hud left">
+        <div class="portrait-small" id="p1HudPortrait"></div>
+        <div class="health-bar-container">
+          <div class="health-bar" id="p1HealthBar"></div>
+          <span class="player-name" id="p1HudName">P1</span>
+        </div>
+      </div>
+      <div id="timerDisplay">99</div>
+      <div class="player-hud right">
+        <div class="health-bar-container right-bar">
+          <div class="health-bar" id="p2HealthBar"></div>
+          <span class="player-name" id="p2HudName">P2</span>
+        </div>
+        <div class="portrait-small" id="p2HudPortrait"></div>
+      </div>
+    </div>
+    <canvas id="gameCanvas" width="1024" height="576"></canvas>
+    <div id="roundResult" class="hidden">
+      <span id="resultText"></span>
+      <button id="btnRestart" class="mode-btn">再來一局</button>
+      <button id="btnBackToMenu" class="mode-btn">回選單</button>
+    </div>
+  </div>
+
+  <script src="classes.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
