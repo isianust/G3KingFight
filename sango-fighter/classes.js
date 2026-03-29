@@ -130,35 +130,49 @@ class Projectile {
     var alpha = Math.min(1, this.life / 20);
     ctx.globalAlpha = alpha;
 
-    // Glow effect
+    // Glow effect — enhanced multi-layer
     ctx.shadowColor = this.color;
-    ctx.shadowBlur = 15;
+    ctx.shadowBlur = 20;
 
-    // Main body
-    ctx.fillStyle = this.color;
+    // Outer glow ring
+    ctx.strokeStyle = this.color;
+    ctx.lineWidth = 3;
     ctx.beginPath();
     var cx = this.position.x + this.width / 2;
     var cy = this.position.y + this.height / 2;
+    ctx.ellipse(cx, cy, this.width / 2 + 4, this.height / 2 + 4, 0, 0, Math.PI * 2);
+    ctx.globalAlpha = alpha * 0.3;
+    ctx.stroke();
+
+    // Main body
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
     ctx.ellipse(cx, cy, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
     ctx.fill();
 
     // Inner bright core
     ctx.fillStyle = '#fff';
+    ctx.shadowBlur = 10;
     ctx.beginPath();
     ctx.ellipse(cx, cy, this.width / 4, this.height / 4, 0, 0, Math.PI * 2);
     ctx.fill();
+    ctx.shadowBlur = 0;
 
-    // Trail particles
-    for (var i = 0; i < 3; i++) {
-      var tx = this.position.x - this.vx * (i + 1) * 0.5 + (Math.random() - 0.5) * 6;
-      var ty = this.position.y + this.height / 2 + (Math.random() - 0.5) * 8;
-      var tr = Math.random() * 3 + 1;
-      ctx.globalAlpha = alpha * (0.5 - i * 0.15);
-      ctx.fillStyle = this.color;
+    // Trail particles — enhanced with glow
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = 8;
+    for (var i = 0; i < 5; i++) {
+      var tx = this.position.x - this.vx * (i + 1) * 0.6 + (Math.random() - 0.5) * 8;
+      var ty = this.position.y + this.height / 2 + (Math.random() - 0.5) * 10;
+      var tr = Math.random() * 4 + 1;
+      ctx.globalAlpha = alpha * (0.6 - i * 0.1);
+      ctx.fillStyle = i < 2 ? '#fff' : this.color;
       ctx.beginPath();
       ctx.arc(tx, ty, tr, 0, Math.PI * 2);
       ctx.fill();
     }
+    ctx.shadowBlur = 0;
 
     ctx.restore();
   }
@@ -239,6 +253,9 @@ class Fighter extends Sprite {
     this.specialHitsRemaining = 0;
     this.isUsingUltimate = false;
     this.ultimateFlash = 0;
+
+    // Motion trail for special moves
+    this._motionTrail = [];
 
     // Buff state
     this.buffTimer = 0;
@@ -802,10 +819,80 @@ class Fighter extends Sprite {
     var bodyColor = this.charData ? this.charData.color : this.color;
     var isSoldierUnit = this.isSoldier;
 
-    // Ultimate flash effect
+    // Ultimate flash effect — dramatic multi-layer flash
     if (this.ultimateFlash > 0) {
-      ctx.fillStyle = 'rgba(255, 255, 200, ' + (this.ultimateFlash / 30 * 0.6) + ')';
+      var flashProgress = this.ultimateFlash / 30;
+      // Outer radial burst from character
+      var moveColor = (this.currentSpecialMove && this.currentSpecialMove.color) || '#ffd700';
+      var burstX = this.position.x + this.width / 2;
+      var burstY = this.position.y + this.height / 2;
+      var burstR = (1 - flashProgress) * 300 + 50;
+      var burstGrad = ctx.createRadialGradient(burstX, burstY, 0, burstX, burstY, burstR);
+      burstGrad.addColorStop(0, 'rgba(255, 255, 255, ' + (flashProgress * 0.7) + ')');
+
+      // Convert move color to rgba safely
+      var burstRgba = this._colorToRgba(moveColor, flashProgress * 0.4);
+      burstGrad.addColorStop(0.4, burstRgba);
+      burstGrad.addColorStop(1, 'rgba(255, 200, 100, 0)');
+
+      // Base flash layer
+      ctx.fillStyle = 'rgba(255, 255, 200, ' + (flashProgress * 0.5) + ')';
       ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+      ctx.fillStyle = burstGrad;
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+      // Speed lines radiating from character
+      if (this.ultimateFlash > 15) {
+        ctx.save();
+        ctx.globalAlpha = flashProgress * 0.6;
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 2;
+        for (var sl = 0; sl < 16; sl++) {
+          var lineAngle = (Math.PI * 2 / 16) * sl;
+          var innerR = 60 + Math.random() * 20;
+          var outerR = 150 + Math.random() * 100;
+          ctx.beginPath();
+          ctx.moveTo(burstX + Math.cos(lineAngle) * innerR, burstY + Math.sin(lineAngle) * innerR);
+          ctx.lineTo(burstX + Math.cos(lineAngle) * outerR, burstY + Math.sin(lineAngle) * outerR);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+
+    // Draw motion trail for special moves
+    if (this.isUsingSpecial || this.isUsingUltimate) {
+      this._motionTrail.push({
+        x: this.position.x,
+        y: this.position.y,
+        w: this.width,
+        h: this.height,
+        color: bodyColor,
+        alpha: 0.4,
+        life: 6
+      });
+      if (this._motionTrail.length > 5) {
+        this._motionTrail.shift();
+      }
+    } else {
+      this._motionTrail.length = 0;
+    }
+
+    // Render motion trail
+    for (var ti = 0; ti < this._motionTrail.length; ti++) {
+      var trail = this._motionTrail[ti];
+      trail.life--;
+      if (trail.life <= 0) {
+        this._motionTrail.splice(ti, 1);
+        ti--;
+        continue;
+      }
+      ctx.save();
+      ctx.globalAlpha = (trail.life / 6) * 0.25;
+      ctx.fillStyle = trail.color;
+      ctx.fillRect(trail.x, trail.y, trail.w, trail.h);
+      ctx.restore();
     }
 
     // Buff glow
@@ -1001,11 +1088,23 @@ class Fighter extends Sprite {
       if (this.isAttacking) weapLen *= 1.2;
       ctx.lineTo(dir * weapLen * 0.3, armH + weapLen * 0.6);
       ctx.stroke();
-      // Weapon glow during attack
+      // Weapon glow during attack — enhanced with colour and blur
       if (this.isAttacking) {
-        ctx.strokeStyle = 'rgba(255,255,100,0.5)';
-        ctx.lineWidth = 5;
+        var glowColor = this.isUsingSpecial && this.currentSpecialMove
+          ? (this.currentSpecialMove.color || 'rgba(255,255,100,0.7)')
+          : 'rgba(255,255,100,0.6)';
+        ctx.shadowColor = glowColor;
+        ctx.shadowBlur = this.isUsingUltimate ? 25 : (this.isUsingSpecial ? 18 : 10);
+        ctx.strokeStyle = glowColor;
+        ctx.lineWidth = this.isUsingUltimate ? 8 : (this.isUsingSpecial ? 6 : 5);
         ctx.stroke();
+        // Second glow layer for specials
+        if (this.isUsingSpecial) {
+          ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+          ctx.lineWidth = 3;
+          ctx.stroke();
+        }
+        ctx.shadowBlur = 0;
       }
     }
     ctx.restore();
@@ -1295,5 +1394,30 @@ class Fighter extends Sprite {
     var g = Math.min(255, Math.floor(parseInt(hex.slice(3, 5), 16) * factor));
     var b = Math.min(255, Math.floor(parseInt(hex.slice(5, 7), 16) * factor));
     return 'rgb(' + r + ',' + g + ',' + b + ')';
+  }
+
+  _colorToRgba(color, alpha) {
+    // Handle hex colors (#rrggbb)
+    if (color.charAt(0) === '#') {
+      var r = parseInt(color.slice(1, 3), 16);
+      var g = parseInt(color.slice(3, 5), 16);
+      var b = parseInt(color.slice(5, 7), 16);
+      if (isNaN(r)) r = 255;
+      if (isNaN(g)) g = 200;
+      if (isNaN(b)) b = 100;
+      return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+    }
+    // Handle rgb() colors
+    var match = color.match(/rgb\(\s*(\d+),\s*(\d+),\s*(\d+)\s*\)/);
+    if (match) {
+      return 'rgba(' + match[1] + ',' + match[2] + ',' + match[3] + ',' + alpha + ')';
+    }
+    // Handle rgba() colors — replace existing alpha
+    var matchA = color.match(/rgba\(\s*(\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\s*\)/);
+    if (matchA) {
+      return 'rgba(' + matchA[1] + ',' + matchA[2] + ',' + matchA[3] + ',' + alpha + ')';
+    }
+    // Fallback
+    return 'rgba(255, 200, 100, ' + alpha + ')';
   }
 }

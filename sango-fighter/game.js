@@ -78,6 +78,11 @@
   var currentStage = 0;
   var STAGE_COUNT = 5;
 
+  /* ---------- Screen Effects ---------- */
+  var screenShake = { intensity: 0, duration: 0, timer: 0 };
+  var screenFlash = { color: '', alpha: 0, duration: 0, timer: 0 };
+  var slowMotion = { active: false, timer: 0, duration: 0 };
+
   /* ---------- Mobile Detection & State ---------- */
   var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
     || ('ontouchstart' in window)
@@ -273,6 +278,10 @@
     p2Portrait.style.background = '';
     p1NameEl.textContent = '---';
     p2NameEl.textContent = '---';
+    // Restore scroll on mobile when back to menu
+    if (isMobile) {
+      document.body.style.overflow = '';
+    }
     var p1Info = document.getElementById('p1CharInfo');
     var p2Info = document.getElementById('p2CharInfo');
     if (p1Info) p1Info.innerHTML = '';
@@ -401,13 +410,24 @@
       dialogPortrait.textContent = dialog.speaker.charAt(0);
     }
 
-    // Wait for click to advance
-    var nextHandler = function () {
+    // Wait for click/tap to advance — support tapping anywhere on dialog box on mobile
+    var nextHandler = function (e) {
+      e.preventDefault();
+      e.stopPropagation();
       btnDialogNext.removeEventListener('click', nextHandler);
+      btnDialogNext.removeEventListener('touchend', nextHandler);
+      dialogOverlay.removeEventListener('click', nextHandler);
+      dialogOverlay.removeEventListener('touchend', nextHandler);
       storyDialogIndex++;
       showNextDialog(callback);
     };
     btnDialogNext.addEventListener('click', nextHandler);
+    btnDialogNext.addEventListener('touchend', nextHandler);
+    // Also allow tapping the entire dialog overlay on mobile
+    if (isMobile) {
+      dialogOverlay.addEventListener('click', nextHandler);
+      dialogOverlay.addEventListener('touchend', nextHandler);
+    }
   }
 
   function startStoryBattle() {
@@ -623,6 +643,11 @@
     roundResult.classList.add('hidden');
     dialogOverlay.classList.add('hidden');
 
+    // Lock scroll during gameplay on mobile
+    if (isMobile) {
+      document.body.style.overflow = 'hidden';
+    }
+
     hitEffects.length = 0;
     projectiles.length = 0;
 
@@ -760,7 +785,19 @@
 
   function gameLoop() {
     if (!gameRunning) return;
+
+    // Slow motion effect — skip frames
+    if (slowMotion.active) {
+      slowMotion.timer--;
+      if (slowMotion.timer <= 0) {
+        slowMotion.active = false;
+      }
+    }
+
     animFrameId = requestAnimationFrame(gameLoop);
+
+    // Apply screen shake (translate canvas)
+    var shakeApplied = applyScreenShake();
 
     drawBackground();
 
@@ -783,6 +820,14 @@
     updateProjectiles();
 
     drawHitEffects();
+
+    // Draw screen flash overlay
+    drawScreenFlash();
+
+    // Restore from screen shake
+    if (shakeApplied) {
+      ctx.restore();
+    }
 
     // Update HUD
     p1HealthBar.style.width = (player1.health / player1.maxHealth * 100) + '%';
@@ -1431,23 +1476,94 @@
   }
 
   /* ========================================
-     Hit Effects
+     Hit Effects & Screen Effects
      ======================================== */
 
+  function triggerScreenShake(intensity, duration) {
+    screenShake.intensity = intensity;
+    screenShake.duration = duration;
+    screenShake.timer = duration;
+  }
+
+  function triggerScreenFlash(color, alpha, duration) {
+    screenFlash.color = color;
+    screenFlash.alpha = alpha;
+    screenFlash.duration = duration;
+    screenFlash.timer = duration;
+  }
+
+  function triggerSlowMotion(duration) {
+    slowMotion.active = true;
+    slowMotion.timer = duration;
+    slowMotion.duration = duration;
+  }
+
+  function applyScreenShake() {
+    if (screenShake.timer > 0) {
+      screenShake.timer--;
+      var progress = screenShake.timer / screenShake.duration;
+      var shakeX = (Math.random() - 0.5) * 2 * screenShake.intensity * progress;
+      var shakeY = (Math.random() - 0.5) * 2 * screenShake.intensity * progress;
+      ctx.save();
+      ctx.translate(shakeX, shakeY);
+      return true;
+    }
+    return false;
+  }
+
+  function drawScreenFlash() {
+    if (screenFlash.timer > 0) {
+      screenFlash.timer--;
+      var progress = screenFlash.timer / screenFlash.duration;
+      ctx.save();
+      ctx.globalAlpha = screenFlash.alpha * progress;
+      ctx.fillStyle = screenFlash.color;
+      ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+      ctx.restore();
+    }
+  }
+
   function spawnHitEffect(x, y, isSpecial) {
-    var count = isSpecial ? 15 : 8;
-    var colors = isSpecial ? ['#ffcc00', '#ff6600', '#ff0000', '#ffff00'] : ['#ffcc00', '#ff6600'];
+    var count = isSpecial ? 20 : 10;
+    var colors = isSpecial
+      ? ['#ffcc00', '#ff6600', '#ff0000', '#ffff00', '#ff3300', '#ffffff']
+      : ['#ffcc00', '#ff6600', '#ffffff'];
     for (var i = 0; i < count; i++) {
+      var angle = (Math.PI * 2 / count) * i + (Math.random() - 0.5) * 0.5;
+      var speed = (isSpecial ? 6 : 4) + Math.random() * (isSpecial ? 8 : 5);
       hitEffects.push({
         x: x,
         y: y,
-        vx: (Math.random() - 0.5) * (isSpecial ? 12 : 8),
-        vy: (Math.random() - 0.5) * (isSpecial ? 12 : 8),
-        life: 15 + Math.floor(Math.random() * 10),
-        maxLife: 25,
-        r: Math.random() * (isSpecial ? 6 : 4) + 2,
-        color: colors[Math.floor(Math.random() * colors.length)]
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 18 + Math.floor(Math.random() * 12),
+        maxLife: 30,
+        r: Math.random() * (isSpecial ? 7 : 4) + 2,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        type: 'circle'
       });
+    }
+
+    // Add spark lines for special moves
+    if (isSpecial) {
+      for (var j = 0; j < 8; j++) {
+        var sparkAngle = (Math.PI * 2 / 8) * j;
+        hitEffects.push({
+          x: x,
+          y: y,
+          vx: Math.cos(sparkAngle) * 10,
+          vy: Math.sin(sparkAngle) * 10,
+          life: 10,
+          maxLife: 10,
+          r: 2,
+          color: '#ffffff',
+          type: 'line',
+          length: 12 + Math.random() * 8
+        });
+      }
+      triggerScreenShake(6, 8);
+    } else {
+      triggerScreenShake(3, 4);
     }
   }
 
@@ -1456,7 +1572,8 @@
       var h = hitEffects[i];
       h.x += h.vx;
       h.y += h.vy;
-      h.vy += 0.3;
+      h.vy += 0.25;
+      h.vx *= 0.97;
       h.life--;
       if (h.life <= 0) {
         hitEffects.splice(i, 1);
@@ -1465,10 +1582,27 @@
       var alpha = Math.min(1, h.life / h.maxLife);
       ctx.save();
       ctx.globalAlpha = alpha;
-      ctx.beginPath();
-      ctx.arc(h.x, h.y, h.r, 0, Math.PI * 2);
-      ctx.fillStyle = h.color;
-      ctx.fill();
+
+      if (h.type === 'line') {
+        // Draw spark line
+        var lineLen = h.length * (h.life / h.maxLife);
+        ctx.strokeStyle = h.color;
+        ctx.lineWidth = 2;
+        ctx.shadowColor = h.color;
+        ctx.shadowBlur = 6;
+        ctx.beginPath();
+        ctx.moveTo(h.x, h.y);
+        ctx.lineTo(h.x - h.vx * lineLen / 10, h.y - h.vy * lineLen / 10);
+        ctx.stroke();
+      } else {
+        // Draw glowing circle particle
+        ctx.shadowColor = h.color;
+        ctx.shadowBlur = h.r * 2;
+        ctx.beginPath();
+        ctx.arc(h.x, h.y, h.r * (0.5 + 0.5 * alpha), 0, Math.PI * 2);
+        ctx.fillStyle = h.color;
+        ctx.fill();
+      }
       ctx.restore();
     }
   }
@@ -1605,6 +1739,14 @@
         attacker.isUsingSpecial
       );
 
+      // Extra screen effects for ultimate moves
+      if (attacker.isUsingUltimate) {
+        var ultColor = (attacker.currentSpecialMove && attacker.currentSpecialMove.color) || '#ffd700';
+        triggerScreenFlash(ultColor, 0.4, 10);
+        triggerScreenShake(10, 12);
+        triggerSlowMotion(8);
+      }
+
       // Floating damage number
       hitEffects.push({
         x: defender.position.x + defender.width / 2,
@@ -1635,17 +1777,21 @@
           continue;
         }
         var alpha = Math.min(1, h.life / h.maxLife);
+        var scale = 1 + (1 - alpha) * 0.3;
         ctx.save();
         ctx.globalAlpha = alpha;
         ctx.fillStyle = '#ff4444';
-        ctx.font = 'bold 20px sans-serif';
+        ctx.font = 'bold ' + Math.round(20 * scale) + 'px sans-serif';
         ctx.textAlign = 'center';
+        ctx.shadowColor = '#000';
+        ctx.shadowBlur = 4;
         ctx.fillText('-' + h.damageText, h.x, h.y);
         ctx.restore();
       } else {
         h.x += h.vx;
         h.y += h.vy;
-        h.vy += 0.3;
+        h.vy += 0.25;
+        h.vx *= 0.97;
         h.life--;
         if (h.life <= 0) {
           hitEffects.splice(i, 1);
@@ -1654,10 +1800,25 @@
         var alpha2 = Math.min(1, h.life / h.maxLife);
         ctx.save();
         ctx.globalAlpha = alpha2;
-        ctx.beginPath();
-        ctx.arc(h.x, h.y, h.r, 0, Math.PI * 2);
-        ctx.fillStyle = h.color;
-        ctx.fill();
+
+        if (h.type === 'line') {
+          var lineLen = (h.length || 10) * (h.life / h.maxLife);
+          ctx.strokeStyle = h.color;
+          ctx.lineWidth = 2;
+          ctx.shadowColor = h.color;
+          ctx.shadowBlur = 6;
+          ctx.beginPath();
+          ctx.moveTo(h.x, h.y);
+          ctx.lineTo(h.x - h.vx * lineLen / 10, h.y - h.vy * lineLen / 10);
+          ctx.stroke();
+        } else {
+          ctx.shadowColor = h.color;
+          ctx.shadowBlur = h.r * 2;
+          ctx.beginPath();
+          ctx.arc(h.x, h.y, h.r * (0.5 + 0.5 * alpha2), 0, Math.PI * 2);
+          ctx.fillStyle = h.color;
+          ctx.fill();
+        }
         ctx.restore();
       }
     }
@@ -1892,14 +2053,32 @@
     var scaleY = screenH / 576;
     var scale = Math.min(scaleX, scaleY);
 
-    canvas.style.width = (1024 * scale) + 'px';
-    canvas.style.height = (576 * scale) + 'px';
+    var scaledW = Math.floor(1024 * scale);
+    var scaledH = Math.floor(576 * scale);
+
+    canvas.style.width = scaledW + 'px';
+    canvas.style.height = scaledH + 'px';
 
     // Scale game screen container
     var gs = document.getElementById('gameScreen');
     if (gs) {
-      gs.style.width = (1024 * scale) + 'px';
+      gs.style.width = scaledW + 'px';
+      gs.style.height = scaledH + 'px';
       gs.style.position = 'relative';
+      gs.style.overflow = 'hidden';
+    }
+
+    // Scale HUD to match canvas width
+    var hudEl = document.getElementById('hud');
+    if (hudEl) {
+      hudEl.style.width = scaledW + 'px';
+    }
+
+    // Scale round result overlay
+    var rr = document.getElementById('roundResult');
+    if (rr) {
+      rr.style.width = scaledW + 'px';
+      rr.style.height = scaledH + 'px';
     }
   }
 
