@@ -841,7 +841,7 @@ class Fighter extends Sprite {
         ctx.font = '12px sans-serif';
         ctx.fillText('★', starX - 6, starY);
       }
-      ctx.restore();
+      ctx.restore(); // restore inner rotation transform
       // Name label
       if (this.charData) {
         ctx.font = isSoldierUnit ? 'bold 10px sans-serif' : 'bold 13px sans-serif';
@@ -849,7 +849,7 @@ class Fighter extends Sprite {
         ctx.fillStyle = '#ff4444';
         ctx.fillText('DOWN!', this.position.x + this.width / 2, this.position.y - 10);
       }
-      ctx.restore();
+      ctx.restore(); // restore outer _drawPlaceholder save
       return;
     }
 
@@ -867,13 +867,13 @@ class Fighter extends Sprite {
       ctx.strokeStyle = '#44aaff';
       ctx.lineWidth = 2;
       ctx.strokeRect(-this.width / 2, -this.height, this.width, this.height);
-      ctx.restore();
+      ctx.restore(); // restore inner rotation transform
       // Rising text
       ctx.font = 'bold 13px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillStyle = '#44aaff';
       ctx.fillText('RISE!', this.position.x + this.width / 2, this.position.y - 10);
-      ctx.restore();
+      ctx.restore(); // restore outer _drawPlaceholder save
       return;
     }
 
@@ -1276,7 +1276,6 @@ class Fighter extends Sprite {
       ctx.fill();
     }
 
-    ctx.globalAlpha = 1; // Reset alpha
     ctx.restore();
   }
 

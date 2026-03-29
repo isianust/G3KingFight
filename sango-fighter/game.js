@@ -75,6 +75,8 @@
   var bgParticles = [];
   var hitEffects = [];
   var projectiles = [];
+  var currentStage = 0;
+  var STAGE_COUNT = 5;
 
   /* ---------- Mobile Detection & State ---------- */
   var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
@@ -820,9 +822,6 @@
   /* ========================================
      Background — Multiple Stages
      ======================================== */
-
-  var currentStage = 0;
-  var STAGE_COUNT = 5;
 
   function drawBackground() {
     // Cycle stages based on characters or randomly
