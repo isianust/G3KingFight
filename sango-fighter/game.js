@@ -796,7 +796,6 @@
     // Apply difficulty multipliers to CPU (player2)
     if (gameMode === 'pvcpu' || gameMode === 'story') {
       var diff = DIFFICULTY_SETTINGS[gameDifficulty] || DIFFICULTY_SETTINGS.easy;
-      player2._atkMultiplier *= diff.dmgMultiplier;
       // Boost CPU stats by difficulty bonus
       var boostedStats = {
         atk: Math.min(10, p2Char.stats.atk + diff.statBonus),
