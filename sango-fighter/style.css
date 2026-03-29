@@ -16,6 +16,13 @@ body {
   overflow: hidden;
 }
 
+body.is-mobile {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 .screen {
   position: relative;
   width: 1024px;
@@ -762,4 +769,292 @@ body {
   border-top: 1px solid rgba(255, 215, 0, 0.3);
   margin-top: 2px;
   padding-top: 2px;
+}
+
+/* === Mobile Touch Controls === */
+.mobile-controls {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 25;
+}
+
+/* Virtual Joystick */
+.joystick-area {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  width: 140px;
+  height: 140px;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.joystick-base {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: 3px solid rgba(201, 168, 76, 0.5);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.joystick-thumb {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201, 168, 76, 0.8), rgba(201, 168, 76, 0.4));
+  border: 2px solid rgba(255, 215, 0, 0.7);
+  position: absolute;
+  transition: none;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+/* Mobile Buttons */
+.mobile-buttons-left {
+  position: absolute;
+  top: 80px;
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.mobile-buttons-right {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.mobile-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: bold;
+  font-family: inherit;
+  border: 2px solid rgba(255, 215, 0, 0.6);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.mobile-btn:active, .mobile-btn.active {
+  transform: scale(0.9);
+  border-color: #ffd700;
+}
+
+.mobile-btn-light {
+  background: rgba(68, 136, 255, 0.6);
+  border-color: rgba(68, 136, 255, 0.8);
+}
+
+.mobile-btn-heavy {
+  background: rgba(255, 68, 68, 0.6);
+  border-color: rgba(255, 68, 68, 0.8);
+}
+
+.mobile-btn-jump {
+  background: rgba(68, 204, 68, 0.6);
+  border-color: rgba(68, 204, 68, 0.8);
+  margin-bottom: 20px;
+}
+
+.mobile-btn-block {
+  background: rgba(100, 100, 200, 0.5);
+  border-color: rgba(100, 150, 255, 0.7);
+  width: 48px;
+  height: 48px;
+  font-size: 15px;
+}
+
+.mobile-btn-charge {
+  background: rgba(0, 150, 255, 0.5);
+  border-color: rgba(0, 200, 255, 0.7);
+  width: 48px;
+  height: 48px;
+  font-size: 15px;
+}
+
+/* === Responsive / Mobile Layout === */
+@media (max-width: 1100px) {
+  .screen {
+    width: 100vw;
+    min-height: auto;
+  }
+
+  #gameCanvas {
+    width: 100vw;
+    height: auto;
+  }
+
+  #hud {
+    width: 100%;
+  }
+
+  #roundResult {
+    width: 100%;
+    height: 100%;
+  }
+
+  .health-bar-container {
+    width: 28vw;
+  }
+
+  .energy-bar-container {
+    width: 28vw;
+  }
+
+  #timerDisplay {
+    font-size: 24px;
+    min-width: 40px;
+  }
+
+  .title {
+    font-size: 28px;
+    letter-spacing: 4px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+  }
+
+  .char-grid {
+    max-width: 100%;
+  }
+
+  .char-cell {
+    width: 70px;
+    height: 58px;
+    font-size: 10px;
+  }
+
+  .controls-info {
+    display: none;
+  }
+
+  .mode-btn {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  #charSelectScreen {
+    border: none;
+    padding: 10px;
+    max-height: 100vh;
+  }
+
+  #selectedDisplay {
+    gap: 10px;
+  }
+
+  .portrait-placeholder {
+    width: 50px;
+    height: 50px;
+    font-size: 16px;
+  }
+
+  .vs-text {
+    font-size: 22px;
+  }
+
+  .fight-btn {
+    padding: 10px 30px;
+    font-size: 18px;
+  }
+
+  .battle-movelist {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .title {
+    font-size: 22px;
+    letter-spacing: 2px;
+  }
+
+  .char-cell {
+    width: 60px;
+    height: 50px;
+    font-size: 9px;
+  }
+
+  .char-cell-portrait {
+    width: 24px;
+    height: 24px;
+  }
+
+  .mode-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  #modeSelect {
+    gap: 6px;
+  }
+
+  .health-bar-container {
+    width: 25vw;
+    height: 16px;
+  }
+
+  .energy-bar-container {
+    width: 25vw;
+    height: 7px;
+  }
+
+  .portrait-small {
+    width: 32px;
+    height: 32px;
+    font-size: 9px;
+  }
+
+  .player-name {
+    font-size: 10px;
+  }
+
+  .dialog-box {
+    padding: 10px 12px;
+  }
+
+  .dialog-portrait {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  .dialog-text {
+    font-size: 13px;
+  }
+}
+
+/* Mobile-only: hide PvP button */
+body.is-mobile #btnPvP {
+  display: none;
+}
+
+/* Mobile-only: hide keyboard controls info */
+body.is-mobile .controls-info {
+  display: none;
 }

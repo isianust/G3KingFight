@@ -75,6 +75,31 @@
   var bgParticles = [];
   var hitEffects = [];
   var projectiles = [];
+  var currentStage = 0;
+  var STAGE_COUNT = 5;
+
+  /* ---------- Mobile Detection & State ---------- */
+  var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    || ('ontouchstart' in window)
+    || (navigator.maxTouchPoints > 0);
+
+  var mobileControls = document.getElementById('mobileControls');
+  var joystickArea = document.getElementById('joystickArea');
+  var joystickBase = document.getElementById('joystickBase');
+  var joystickThumb = document.getElementById('joystickThumb');
+
+  // Apply mobile class to body
+  if (isMobile) {
+    document.body.classList.add('is-mobile');
+  }
+
+  // Joystick state
+  var joystickActive = false;
+  var joystickTouchId = null;
+  var joystickCenter = { x: 0, y: 0 };
+  var joystickInput = { x: 0, y: 0 }; // -1 to 1
+  var JOYSTICK_DEAD_ZONE = 0.2;
+  var JOYSTICK_MAX_DIST = 45;
 
   /* ---------- Combat constants ---------- */
   var LIGHT_ATTACK_DAMAGE = 8;
@@ -190,6 +215,7 @@
 
   /* ---------- Mode buttons ---------- */
   btnPvP.addEventListener('click', function () {
+    if (isMobile) return; // Mobile only supports single player
     gameMode = 'pvp';
     modeSelect.classList.add('hidden');
     charSelectPanel.classList.remove('hidden');
@@ -657,6 +683,7 @@
     }, 1000);
 
     initBgParticles();
+    currentStage = Math.floor(Math.random() * STAGE_COUNT);
 
     // Populate and reset in-battle move list
     populateBattleMoveList();
@@ -667,6 +694,12 @@
 
     gameRunning = true;
     animFrameId = requestAnimationFrame(gameLoop);
+
+    // Mobile: show touch controls & scale
+    if (isMobile) {
+      showMobileControls();
+      scaleCanvasForMobile();
+    }
   }
 
   function applyStats(fighter, stats) {
@@ -685,6 +718,7 @@
       clearInterval(timerInterval);
       timerInterval = null;
     }
+    hideMobileControls();
   }
 
   /* ========================================
@@ -729,6 +763,11 @@
     animFrameId = requestAnimationFrame(gameLoop);
 
     drawBackground();
+
+    // Apply mobile touch input
+    if (isMobile) {
+      applyMobileInput();
+    }
 
     if (gameMode === 'pvcpu' || gameMode === 'story') {
       cpuAI(player2, player1);
@@ -780,97 +819,605 @@
     }
   }
 
-  function drawBackground() {
-    // Chinese ancient style background — brighter sky
-    var grad = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
-    grad.addColorStop(0, '#2e1a3a');
-    grad.addColorStop(0.3, '#4a2e5a');
-    grad.addColorStop(0.6, '#2e4a3a');
-    grad.addColorStop(1, '#1a3022');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+  /* ========================================
+     Background — Multiple Stages
+     ======================================== */
 
-    // Moon / sun glow
-    ctx.save();
-    ctx.globalAlpha = 0.15;
-    var moonGrad = ctx.createRadialGradient(CANVAS_W * 0.8, 80, 10, CANVAS_W * 0.8, 80, 120);
-    moonGrad.addColorStop(0, '#ffffcc');
-    moonGrad.addColorStop(1, 'transparent');
-    ctx.fillStyle = moonGrad;
-    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-    ctx.restore();
+  function drawBackground() {
+    // Cycle stages based on characters or randomly
+    var stage = currentStage % STAGE_COUNT;
+
+    switch (stage) {
+      case 0: drawStage_BattlefieldDusk(); break;
+      case 1: drawStage_ImperialPalace(); break;
+      case 2: drawStage_RedCliff(); break;
+      case 3: drawStage_BambooForest(); break;
+      case 4: drawStage_AncientBridge(); break;
+      default: drawStage_BattlefieldDusk(); break;
+    }
+  }
+
+  // Stage 0: Battlefield at Dusk — 黃昏戰場
+  function drawStage_BattlefieldDusk() {
+    // Sky gradient — dramatic dusk
+    var grad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+    grad.addColorStop(0, '#1a0a2e');
+    grad.addColorStop(0.15, '#2d1b4e');
+    grad.addColorStop(0.35, '#6b2d3e');
+    grad.addColorStop(0.55, '#c44e2d');
+    grad.addColorStop(0.75, '#e8913a');
+    grad.addColorStop(1, '#f4c462');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, CANVAS_W, GROUND_Y);
+
+    // Sun near horizon
+    var sunX = CANVAS_W * 0.5;
+    var sunY = GROUND_Y - 40;
+    var sunGrad = ctx.createRadialGradient(sunX, sunY, 5, sunX, sunY, 120);
+    sunGrad.addColorStop(0, 'rgba(255,240,180,0.9)');
+    sunGrad.addColorStop(0.3, 'rgba(255,180,60,0.5)');
+    sunGrad.addColorStop(1, 'rgba(255,100,30,0)');
+    ctx.fillStyle = sunGrad;
+    ctx.fillRect(0, GROUND_Y - 160, CANVAS_W, 160);
+
+    // Clouds
+    drawCloud(100, 60, 120, 35, 'rgba(180,100,60,0.3)');
+    drawCloud(400, 40, 180, 40, 'rgba(200,120,80,0.25)');
+    drawCloud(700, 80, 140, 30, 'rgba(160,80,50,0.3)');
+    drawCloud(850, 30, 100, 25, 'rgba(180,90,60,0.2)');
+
+    // Distant mountains — layered silhouettes
+    ctx.fillStyle = '#3a1828';
+    drawMountainRange(0, GROUND_Y, [100, 250, 180, 320, 200, 400, 150, 500, 280, 650, 200, 800, 250, 950], 160);
+    ctx.fillStyle = '#4a2030';
+    drawMountainRange(30, GROUND_Y, [80, 180, 150, 350, 170, 500, 130, 700, 190, 880], 120);
+    ctx.fillStyle = '#5a2838';
+    drawMountainRange(60, GROUND_Y, [60, 150, 120, 400, 100, 600, 140, 850], 80);
+
+    // War banners
+    drawWarBanner(120, GROUND_Y - 140, '#cc2222', '蜀');
+    drawWarBanner(880, GROUND_Y - 130, '#4444cc', '魏');
+
+    // Scattered weapons on ground
+    ctx.strokeStyle = '#666';
+    ctx.lineWidth = 2;
+    for (var i = 0; i < 6; i++) {
+      var wx = 50 + i * 170;
+      ctx.beginPath();
+      ctx.moveTo(wx, GROUND_Y - 2);
+      ctx.lineTo(wx + 15, GROUND_Y - 20 - Math.random() * 10);
+      ctx.stroke();
+    }
 
     updateBgParticles();
 
-    // Mountains with Chinese style — more visible
-    ctx.fillStyle = '#2a2a44';
-    drawMountain(50, GROUND_Y, 300, 150);
-    ctx.fillStyle = '#282840';
-    drawMountain(350, GROUND_Y, 200, 100);
-    ctx.fillStyle = '#2c2c48';
-    drawMountain(650, GROUND_Y, 350, 130);
-    ctx.fillStyle = '#262640';
-    drawMountain(900, GROUND_Y, 200, 90);
-
-    // Distant pagoda silhouette
-    ctx.fillStyle = '#33334e';
-    drawPagoda(150, GROUND_Y - 80, 30, 80);
-    drawPagoda(800, GROUND_Y - 60, 25, 60);
-
-    // Ground - ancient Chinese earth tone — brighter
+    // Ground — dusty battlefield
     var groundGrad = ctx.createLinearGradient(0, GROUND_Y, 0, CANVAS_H);
-    groundGrad.addColorStop(0, '#6a5a3e');
+    groundGrad.addColorStop(0, '#8a7a5a');
+    groundGrad.addColorStop(0.3, '#6a5a3e');
     groundGrad.addColorStop(1, '#3e2e18');
     ctx.fillStyle = groundGrad;
     ctx.fillRect(0, GROUND_Y, CANVAS_W, CANVAS_H - GROUND_Y);
 
     // Ground line
-    ctx.strokeStyle = '#b8a878';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#c9a84c';
+    ctx.lineWidth = 3;
     ctx.beginPath();
     ctx.moveTo(0, GROUND_Y);
     ctx.lineTo(CANVAS_W, GROUND_Y);
     ctx.stroke();
 
-    // Ground texture lines
-    ctx.strokeStyle = 'rgba(140, 120, 80, 0.35)';
+    // Ground detail — cracks and texture
+    ctx.strokeStyle = 'rgba(140, 120, 80, 0.4)';
     ctx.lineWidth = 1;
-    for (var i = 0; i < 10; i++) {
-      var y = GROUND_Y + 10 + i * 8;
+    for (var i2 = 0; i2 < 12; i2++) {
+      var y2 = GROUND_Y + 8 + i2 * 7;
       ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(CANVAS_W, y);
+      ctx.moveTo(0, y2);
+      ctx.lineTo(CANVAS_W, y2 + Math.sin(i2) * 2);
       ctx.stroke();
     }
   }
 
-  function drawMountain(x, baseY, w, h) {
+  // Stage 1: Imperial Palace — 皇宮
+  function drawStage_ImperialPalace() {
+    // Night sky
+    var grad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+    grad.addColorStop(0, '#0a0a2a');
+    grad.addColorStop(0.4, '#1a1a4a');
+    grad.addColorStop(0.7, '#2a2040');
+    grad.addColorStop(1, '#3a2a30');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, CANVAS_W, GROUND_Y);
+
+    // Moon
+    ctx.save();
+    ctx.fillStyle = '#ffffdd';
+    ctx.beginPath();
+    ctx.arc(CANVAS_W * 0.82, 70, 35, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowColor = '#ffffaa';
+    ctx.shadowBlur = 40;
+    ctx.fill();
+    ctx.restore();
+
+    // Moon glow
+    var moonGrad = ctx.createRadialGradient(CANVAS_W * 0.82, 70, 30, CANVAS_W * 0.82, 70, 150);
+    moonGrad.addColorStop(0, 'rgba(255,255,200,0.15)');
+    moonGrad.addColorStop(1, 'rgba(255,255,200,0)');
+    ctx.fillStyle = moonGrad;
+    ctx.fillRect(0, 0, CANVAS_W, GROUND_Y);
+
+    // Stars
+    ctx.fillStyle = '#fff';
+    var starSeed = [120,30, 200,80, 350,20, 450,60, 550,40, 680,15, 750,70, 850,50, 950,25, 160,100, 400,90, 600,75];
+    for (var i = 0; i < starSeed.length; i += 2) {
+      ctx.globalAlpha = 0.4 + Math.sin(Date.now() * 0.003 + i) * 0.3;
+      ctx.beginPath();
+      ctx.arc(starSeed[i], starSeed[i+1], 1.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // Palace building background
+    drawPalaceBuilding(CANVAS_W * 0.5, GROUND_Y, 500, 200);
+
+    // Palace pillars
+    ctx.fillStyle = '#882222';
+    ctx.fillRect(80, GROUND_Y - 200, 25, 200);
+    ctx.fillRect(920, GROUND_Y - 200, 25, 200);
+    ctx.fillRect(200, GROUND_Y - 180, 20, 180);
+    ctx.fillRect(805, GROUND_Y - 180, 20, 180);
+
+    // Lanterns
+    drawLantern(92, GROUND_Y - 210, '#ff4444');
+    drawLantern(932, GROUND_Y - 210, '#ff4444');
+    drawLantern(CANVAS_W * 0.35, GROUND_Y - 160, '#ffaa00');
+    drawLantern(CANVAS_W * 0.65, GROUND_Y - 160, '#ffaa00');
+
+    updateBgParticles();
+
+    // Palace floor — polished stone
+    var floorGrad = ctx.createLinearGradient(0, GROUND_Y, 0, CANVAS_H);
+    floorGrad.addColorStop(0, '#5a4a3a');
+    floorGrad.addColorStop(0.5, '#4a3a2a');
+    floorGrad.addColorStop(1, '#3a2a1a');
+    ctx.fillStyle = floorGrad;
+    ctx.fillRect(0, GROUND_Y, CANVAS_W, CANVAS_H - GROUND_Y);
+
+    // Floor tiles
+    ctx.strokeStyle = 'rgba(201, 168, 76, 0.3)';
+    ctx.lineWidth = 1;
+    for (var t = 0; t < CANVAS_W; t += 64) {
+      ctx.beginPath();
+      ctx.moveTo(t, GROUND_Y);
+      ctx.lineTo(t, CANVAS_H);
+      ctx.stroke();
+    }
+    for (var ty = GROUND_Y; ty < CANVAS_H; ty += 24) {
+      ctx.beginPath();
+      ctx.moveTo(0, ty);
+      ctx.lineTo(CANVAS_W, ty);
+      ctx.stroke();
+    }
+
+    ctx.strokeStyle = '#c9a84c';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(0, GROUND_Y);
+    ctx.lineTo(CANVAS_W, GROUND_Y);
+    ctx.stroke();
+  }
+
+  // Stage 2: Red Cliff — 赤壁
+  function drawStage_RedCliff() {
+    // Fiery sky
+    var grad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+    grad.addColorStop(0, '#1a0a0a');
+    grad.addColorStop(0.2, '#3a1010');
+    grad.addColorStop(0.5, '#6a2010');
+    grad.addColorStop(0.7, '#8a3020');
+    grad.addColorStop(1, '#c04020');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, CANVAS_W, GROUND_Y);
+
+    // Fire glow from below
+    var fireGlow = ctx.createRadialGradient(CANVAS_W * 0.3, GROUND_Y, 20, CANVAS_W * 0.3, GROUND_Y, 300);
+    fireGlow.addColorStop(0, 'rgba(255,100,0,0.3)');
+    fireGlow.addColorStop(1, 'rgba(255,50,0,0)');
+    ctx.fillStyle = fireGlow;
+    ctx.fillRect(0, 0, CANVAS_W, GROUND_Y);
+
+    var fireGlow2 = ctx.createRadialGradient(CANVAS_W * 0.7, GROUND_Y, 20, CANVAS_W * 0.7, GROUND_Y, 250);
+    fireGlow2.addColorStop(0, 'rgba(255,80,0,0.25)');
+    fireGlow2.addColorStop(1, 'rgba(255,50,0,0)');
+    ctx.fillStyle = fireGlow2;
+    ctx.fillRect(0, 0, CANVAS_W, GROUND_Y);
+
+    // Cliff silhouettes
+    ctx.fillStyle = '#2a0808';
+    drawCliff(0, GROUND_Y, 200, 300);
+    drawCliff(830, GROUND_Y, 200, 260);
+
+    // Burning ships in background
+    drawBurningShip(300, GROUND_Y - 50, 80, '#aa3300');
+    drawBurningShip(550, GROUND_Y - 40, 60, '#993300');
+    drawBurningShip(700, GROUND_Y - 55, 70, '#884422');
+
+    // Fire particles (ember style)
+    for (var fi = 0; fi < 15; fi++) {
+      var fx = (Date.now() * 0.03 + fi * 80) % CANVAS_W;
+      var fy = GROUND_Y - 20 - Math.sin(Date.now() * 0.002 + fi) * 80 - fi * 15;
+      ctx.globalAlpha = 0.4 + Math.random() * 0.3;
+      ctx.fillStyle = fi % 3 === 0 ? '#ff4400' : (fi % 3 === 1 ? '#ffaa00' : '#ff6600');
+      ctx.beginPath();
+      ctx.arc(fx, fy, 2 + Math.random() * 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    updateBgParticles();
+
+    // Cliff ground
+    var groundGrad = ctx.createLinearGradient(0, GROUND_Y, 0, CANVAS_H);
+    groundGrad.addColorStop(0, '#5a3020');
+    groundGrad.addColorStop(0.5, '#4a2818');
+    groundGrad.addColorStop(1, '#2a1808');
+    ctx.fillStyle = groundGrad;
+    ctx.fillRect(0, GROUND_Y, CANVAS_W, CANVAS_H - GROUND_Y);
+
+    ctx.strokeStyle = '#884422';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(0, GROUND_Y);
+    ctx.lineTo(CANVAS_W, GROUND_Y);
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(140, 80, 40, 0.4)';
+    ctx.lineWidth = 1;
+    for (var i3 = 0; i3 < 10; i3++) {
+      ctx.beginPath();
+      ctx.moveTo(0, GROUND_Y + 10 + i3 * 8);
+      ctx.lineTo(CANVAS_W, GROUND_Y + 10 + i3 * 8);
+      ctx.stroke();
+    }
+  }
+
+  // Stage 3: Bamboo Forest — 竹林
+  function drawStage_BambooForest() {
+    // Misty green sky
+    var grad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+    grad.addColorStop(0, '#0a1a10');
+    grad.addColorStop(0.3, '#1a3a20');
+    grad.addColorStop(0.6, '#2a4a30');
+    grad.addColorStop(1, '#3a5a38');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, CANVAS_W, GROUND_Y);
+
+    // Misty fog layers
+    ctx.globalAlpha = 0.15;
+    ctx.fillStyle = '#aaccaa';
+    ctx.fillRect(0, GROUND_Y - 100, CANVAS_W, 80);
+    ctx.globalAlpha = 0.1;
+    ctx.fillRect(0, GROUND_Y - 180, CANVAS_W, 60);
+    ctx.globalAlpha = 1;
+
+    // Bamboo stalks
+    for (var bi = 0; bi < 20; bi++) {
+      var bx = bi * 55 + 10;
+      var bh = 250 + Math.sin(bi * 1.5) * 80;
+      var sway = Math.sin(Date.now() * 0.001 + bi * 0.5) * 3;
+
+      // Stalk
+      ctx.strokeStyle = bi % 3 === 0 ? '#2a6a30' : (bi % 3 === 1 ? '#3a7a40' : '#4a8a50');
+      ctx.lineWidth = 8 - (bi % 3);
+      ctx.beginPath();
+      ctx.moveTo(bx, GROUND_Y);
+      ctx.quadraticCurveTo(bx + sway, GROUND_Y - bh / 2, bx + sway * 2, GROUND_Y - bh);
+      ctx.stroke();
+
+      // Bamboo nodes
+      ctx.strokeStyle = '#5a9a5a';
+      ctx.lineWidth = 2;
+      for (var node = 1; node < 5; node++) {
+        var ny = GROUND_Y - (bh / 5) * node;
+        ctx.beginPath();
+        ctx.moveTo(bx - 5 + sway * (node / 5), ny);
+        ctx.lineTo(bx + 5 + sway * (node / 5), ny);
+        ctx.stroke();
+      }
+
+      // Leaves (only some bamboo)
+      if (bi % 2 === 0) {
+        ctx.fillStyle = 'rgba(80,160,80,0.6)';
+        var leafY = GROUND_Y - bh + 20;
+        var leafX = bx + sway * 2;
+        for (var lf = 0; lf < 3; lf++) {
+          ctx.save();
+          ctx.translate(leafX, leafY + lf * 15);
+          ctx.rotate(0.3 + lf * 0.4 + Math.sin(Date.now() * 0.002 + bi) * 0.1);
+          ctx.beginPath();
+          ctx.ellipse(10, 0, 15, 3, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+    }
+
+    // Sunlight rays through bamboo
+    ctx.save();
+    ctx.globalAlpha = 0.08;
+    for (var ray = 0; ray < 5; ray++) {
+      var rayX = 100 + ray * 220;
+      ctx.fillStyle = '#ffffcc';
+      ctx.beginPath();
+      ctx.moveTo(rayX, 0);
+      ctx.lineTo(rayX + 80, GROUND_Y);
+      ctx.lineTo(rayX + 40, GROUND_Y);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+
+    updateBgParticles();
+
+    // Forest floor
+    var floorGrad = ctx.createLinearGradient(0, GROUND_Y, 0, CANVAS_H);
+    floorGrad.addColorStop(0, '#4a5a3a');
+    floorGrad.addColorStop(0.5, '#3a4a2a');
+    floorGrad.addColorStop(1, '#2a3a1a');
+    ctx.fillStyle = floorGrad;
+    ctx.fillRect(0, GROUND_Y, CANVAS_W, CANVAS_H - GROUND_Y);
+
+    ctx.strokeStyle = '#6a7a5a';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, GROUND_Y);
+    ctx.lineTo(CANVAS_W, GROUND_Y);
+    ctx.stroke();
+  }
+
+  // Stage 4: Ancient Bridge — 古橋
+  function drawStage_AncientBridge() {
+    // Dawn sky
+    var grad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+    grad.addColorStop(0, '#1a2a4a');
+    grad.addColorStop(0.3, '#3a4a6a');
+    grad.addColorStop(0.6, '#6a7a9a');
+    grad.addColorStop(0.85, '#c4a878');
+    grad.addColorStop(1, '#e8c888');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, CANVAS_W, GROUND_Y);
+
+    // Clouds
+    drawCloud(150, 50, 200, 40, 'rgba(200,180,160,0.35)');
+    drawCloud(500, 30, 250, 50, 'rgba(220,200,180,0.3)');
+    drawCloud(800, 70, 160, 35, 'rgba(190,170,150,0.3)');
+
+    // Distant mountains
+    ctx.fillStyle = '#5a6a7a';
+    drawMountainRange(0, GROUND_Y, [150, 200, 120, 400, 180, 600, 140, 800, 160, 950], 120);
+    ctx.fillStyle = '#6a7a8a';
+    drawMountainRange(50, GROUND_Y, [100, 300, 130, 550, 100, 750], 80);
+
+    // Water below bridge
+    ctx.fillStyle = 'rgba(40,80,120,0.5)';
+    ctx.fillRect(0, GROUND_Y + 10, CANVAS_W, CANVAS_H - GROUND_Y - 10);
+
+    // Water reflection
+    ctx.globalAlpha = 0.15;
+    ctx.fillStyle = '#88aacc';
+    for (var wr = 0; wr < 8; wr++) {
+      var wrY = GROUND_Y + 15 + wr * 10;
+      var wrW = 60 + Math.sin(Date.now() * 0.001 + wr) * 20;
+      ctx.fillRect(100 + wr * 120, wrY, wrW, 3);
+    }
+    ctx.globalAlpha = 1;
+
+    // Bridge structure
+    ctx.fillStyle = '#6a5a4a';
+    ctx.fillRect(0, GROUND_Y - 5, CANVAS_W, 20); // Bridge deck
+
+    // Bridge railings
+    ctx.fillStyle = '#5a4a3a';
+    for (var br = 0; br < CANVAS_W; br += 80) {
+      ctx.fillRect(br + 10, GROUND_Y - 40, 8, 40); // Posts
+    }
+    ctx.fillRect(0, GROUND_Y - 42, CANVAS_W, 6); // Top rail
+
+    // Bridge arch underneath
+    ctx.strokeStyle = '#4a3a2a';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.arc(CANVAS_W * 0.3, GROUND_Y + 60, 120, Math.PI, 0);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(CANVAS_W * 0.7, GROUND_Y + 60, 120, Math.PI, 0);
+    ctx.stroke();
+
+    updateBgParticles();
+
+    // Bridge surface
+    ctx.strokeStyle = '#8a7a5a';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(0, GROUND_Y);
+    ctx.lineTo(CANVAS_W, GROUND_Y);
+    ctx.stroke();
+
+    // Wood planks
+    ctx.strokeStyle = 'rgba(100,80,60,0.3)';
+    ctx.lineWidth = 1;
+    for (var pl = 0; pl < CANVAS_W; pl += 16) {
+      ctx.beginPath();
+      ctx.moveTo(pl, GROUND_Y);
+      ctx.lineTo(pl, GROUND_Y + 15);
+      ctx.stroke();
+    }
+  }
+
+  // Helper: Draw cloud
+  function drawCloud(x, y, w, h, color) {
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.ellipse(x + w * 0.3, y, w * 0.3, h * 0.7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(x + w * 0.5, y - h * 0.2, w * 0.35, h * 0.8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(x + w * 0.7, y, w * 0.25, h * 0.6, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // Helper: Draw mountain range
+  function drawMountainRange(baseX, baseY, peaks, maxH) {
+    ctx.beginPath();
+    ctx.moveTo(0, baseY);
+    for (var i = 0; i < peaks.length; i += 2) {
+      var peakH = (peaks[i] / 300) * maxH;
+      var peakX = peaks[i + 1] || (i / 2) * 100;
+      ctx.lineTo(peakX + baseX, baseY - peakH);
+    }
+    ctx.lineTo(CANVAS_W, baseY);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // Helper: Draw war banner
+  function drawWarBanner(x, y, color, text) {
+    // Pole
+    ctx.fillStyle = '#8a7a5a';
+    ctx.fillRect(x - 3, y, 6, 150);
+
+    // Banner flag
+    var sway = Math.sin(Date.now() * 0.003) * 5;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x + 3, y);
+    ctx.lineTo(x + 45 + sway, y + 10);
+    ctx.lineTo(x + 40 + sway, y + 70);
+    ctx.lineTo(x + 3, y + 60);
+    ctx.closePath();
+    ctx.fill();
+
+    // Text on banner
+    ctx.fillStyle = '#ffd700';
+    ctx.font = 'bold 18px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(text, x + 22 + sway / 2, y + 42);
+  }
+
+  // Helper: Draw palace building
+  function drawPalaceBuilding(centerX, baseY, width, height) {
+    var x = centerX - width / 2;
+    var y = baseY - height;
+
+    // Main building body
+    ctx.fillStyle = '#4a2a1a';
+    ctx.fillRect(x + 30, y + 40, width - 60, height - 40);
+
+    // Roof layers
+    for (var r = 0; r < 3; r++) {
+      var roofW = width - r * 80 + 40;
+      var roofX = centerX - roofW / 2;
+      var roofY = y + r * 35;
+      ctx.fillStyle = r === 0 ? '#2a1a0a' : '#3a2a1a';
+      ctx.beginPath();
+      ctx.moveTo(roofX - 20, roofY + 35);
+      ctx.quadraticCurveTo(centerX, roofY - 10, roofX + roofW + 20, roofY + 35);
+      ctx.closePath();
+      ctx.fill();
+
+      // Roof edge highlight
+      ctx.strokeStyle = '#c9a84c';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(roofX - 20, roofY + 35);
+      ctx.quadraticCurveTo(centerX, roofY - 10, roofX + roofW + 20, roofY + 35);
+      ctx.stroke();
+    }
+
+    // Windows / doors
+    ctx.fillStyle = '#ffd700';
+    ctx.globalAlpha = 0.4;
+    ctx.fillRect(centerX - 20, baseY - 60, 40, 55);
+    ctx.fillRect(centerX - 100, baseY - 50, 25, 30);
+    ctx.fillRect(centerX + 75, baseY - 50, 25, 30);
+    ctx.globalAlpha = 1;
+  }
+
+  // Helper: Draw lantern
+  function drawLantern(x, y, color) {
+    // String
+    ctx.strokeStyle = '#888';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, y - 10);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+
+    // Lantern body
+    ctx.fillStyle = color;
+    ctx.globalAlpha = 0.7 + Math.sin(Date.now() * 0.005) * 0.15;
+    ctx.beginPath();
+    ctx.ellipse(x, y + 12, 8, 14, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Inner glow
+    ctx.fillStyle = '#fff';
+    ctx.globalAlpha = 0.3;
+    ctx.beginPath();
+    ctx.ellipse(x, y + 10, 4, 8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // Helper: Draw cliff
+  function drawCliff(x, baseY, w, h) {
     ctx.beginPath();
     ctx.moveTo(x, baseY);
-    // More jagged Chinese mountain style
-    ctx.lineTo(x + w * 0.3, baseY - h * 0.7);
+    ctx.lineTo(x + w * 0.1, baseY - h * 0.5);
+    ctx.lineTo(x + w * 0.25, baseY - h * 0.8);
     ctx.lineTo(x + w * 0.5, baseY - h);
-    ctx.lineTo(x + w * 0.7, baseY - h * 0.6);
+    ctx.lineTo(x + w * 0.75, baseY - h * 0.7);
+    ctx.lineTo(x + w * 0.9, baseY - h * 0.3);
     ctx.lineTo(x + w, baseY);
     ctx.closePath();
     ctx.fill();
   }
 
-  function drawPagoda(x, y, w, h) {
-    // Simple pagoda silhouette
-    var tiers = 3;
-    var tierH = h / tiers;
-    for (var i = 0; i < tiers; i++) {
-      var tierW = w * (1 - i * 0.2);
-      var tierY = y - i * tierH;
-      ctx.fillRect(x - tierW / 2, tierY - tierH, tierW, tierH);
-      // Roof
+  // Helper: Draw burning ship
+  function drawBurningShip(x, y, size, color) {
+    // Hull
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x - size * 0.4, y + size * 0.3);
+    ctx.lineTo(x + size, y + size * 0.3);
+    ctx.lineTo(x + size * 1.2, y);
+    ctx.closePath();
+    ctx.fill();
+
+    // Mast
+    ctx.strokeStyle = '#555';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(x + size * 0.4, y);
+    ctx.lineTo(x + size * 0.4, y - size * 0.6);
+    ctx.stroke();
+
+    // Fire on ship
+    var fireTime = Date.now() * 0.01;
+    ctx.globalAlpha = 0.6;
+    for (var f = 0; f < 3; f++) {
+      ctx.fillStyle = f === 0 ? '#ff4400' : (f === 1 ? '#ffaa00' : '#ff6600');
       ctx.beginPath();
-      ctx.moveTo(x - tierW * 0.7, tierY - tierH);
-      ctx.lineTo(x, tierY - tierH - 8);
-      ctx.lineTo(x + tierW * 0.7, tierY - tierH);
+      var fh = size * 0.3 + Math.sin(fireTime + f * 2) * size * 0.15;
+      ctx.ellipse(x + size * (0.2 + f * 0.3), y - fh * 0.5, size * 0.15, fh, 0, 0, Math.PI * 2);
       ctx.fill();
     }
+    ctx.globalAlpha = 1;
   }
 
   function updateHealthBarColor(barEl, health) {
@@ -1320,6 +1867,202 @@
       }
     }
   });
+
+  /* ========================================
+     Mobile Touch Controls
+     ======================================== */
+
+  function showMobileControls() {
+    if (isMobile && mobileControls) {
+      mobileControls.classList.remove('hidden');
+    }
+  }
+
+  function hideMobileControls() {
+    if (mobileControls) {
+      mobileControls.classList.add('hidden');
+    }
+  }
+
+  function scaleCanvasForMobile() {
+    if (!isMobile) return;
+    var screenW = window.innerWidth;
+    var screenH = window.innerHeight;
+    var scaleX = screenW / 1024;
+    var scaleY = screenH / 576;
+    var scale = Math.min(scaleX, scaleY);
+
+    canvas.style.width = (1024 * scale) + 'px';
+    canvas.style.height = (576 * scale) + 'px';
+
+    // Scale game screen container
+    var gs = document.getElementById('gameScreen');
+    if (gs) {
+      gs.style.width = (1024 * scale) + 'px';
+      gs.style.position = 'relative';
+    }
+  }
+
+  // --- Joystick Touch Handling ---
+  if (joystickArea) {
+    joystickArea.addEventListener('touchstart', function (e) {
+      e.preventDefault();
+      var touch = e.changedTouches[0];
+      joystickActive = true;
+      joystickTouchId = touch.identifier;
+      var rect = joystickBase.getBoundingClientRect();
+      joystickCenter.x = rect.left + rect.width / 2;
+      joystickCenter.y = rect.top + rect.height / 2;
+      updateJoystickPosition(touch);
+    }, { passive: false });
+
+    joystickArea.addEventListener('touchmove', function (e) {
+      e.preventDefault();
+      for (var i = 0; i < e.changedTouches.length; i++) {
+        if (e.changedTouches[i].identifier === joystickTouchId) {
+          updateJoystickPosition(e.changedTouches[i]);
+          break;
+        }
+      }
+    }, { passive: false });
+
+    joystickArea.addEventListener('touchend', function (e) {
+      for (var i = 0; i < e.changedTouches.length; i++) {
+        if (e.changedTouches[i].identifier === joystickTouchId) {
+          joystickActive = false;
+          joystickTouchId = null;
+          joystickInput.x = 0;
+          joystickInput.y = 0;
+          joystickThumb.style.transform = 'translate(0px, 0px)';
+          break;
+        }
+      }
+    });
+
+    joystickArea.addEventListener('touchcancel', function () {
+      joystickActive = false;
+      joystickTouchId = null;
+      joystickInput.x = 0;
+      joystickInput.y = 0;
+      joystickThumb.style.transform = 'translate(0px, 0px)';
+    });
+  }
+
+  function updateJoystickPosition(touch) {
+    var dx = touch.clientX - joystickCenter.x;
+    var dy = touch.clientY - joystickCenter.y;
+    var dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist > JOYSTICK_MAX_DIST) {
+      dx = (dx / dist) * JOYSTICK_MAX_DIST;
+      dy = (dy / dist) * JOYSTICK_MAX_DIST;
+      dist = JOYSTICK_MAX_DIST;
+    }
+
+    joystickInput.x = dx / JOYSTICK_MAX_DIST;
+    joystickInput.y = dy / JOYSTICK_MAX_DIST;
+
+    joystickThumb.style.transform = 'translate(' + dx + 'px, ' + dy + 'px)';
+  }
+
+  // --- Mobile Attack Buttons ---
+  var mobileBtns = document.querySelectorAll('.mobile-btn');
+  var mobileButtonStates = {};
+
+  mobileBtns.forEach(function (btn) {
+    var action = btn.getAttribute('data-action');
+
+    btn.addEventListener('touchstart', function (e) {
+      e.preventDefault();
+      mobileButtonStates[action] = true;
+      btn.classList.add('active');
+    }, { passive: false });
+
+    btn.addEventListener('touchend', function (e) {
+      e.preventDefault();
+      mobileButtonStates[action] = false;
+      btn.classList.remove('active');
+    }, { passive: false });
+
+    btn.addEventListener('touchcancel', function () {
+      mobileButtonStates[action] = false;
+      btn.classList.remove('active');
+    });
+  });
+
+  // --- Apply mobile input to player every frame ---
+  function applyMobileInput() {
+    if (!isMobile || !gameRunning || !player1) return;
+
+    // Joystick → movement
+    if (joystickInput.x < -JOYSTICK_DEAD_ZONE) {
+      player1.keys.left = true;
+      player1.keys.right = false;
+    } else if (joystickInput.x > JOYSTICK_DEAD_ZONE) {
+      player1.keys.right = true;
+      player1.keys.left = false;
+    } else {
+      player1.keys.left = false;
+      player1.keys.right = false;
+    }
+
+    // Joystick up → jump
+    if (joystickInput.y < -0.5) {
+      player1.keys.jump = true;
+    } else {
+      player1.keys.jump = false;
+    }
+
+    // Joystick down → used for command input (block direction)
+    // Already handled by block button
+
+    // Mobile buttons
+    if (mobileButtonStates['attack1']) {
+      player1.keys.attack1 = true;
+      mobileButtonStates['attack1'] = false; // One-shot
+    }
+    if (mobileButtonStates['attack2']) {
+      player1.keys.attack2 = true;
+      mobileButtonStates['attack2'] = false;
+    }
+    if (mobileButtonStates['jump']) {
+      player1.keys.jump = true;
+      mobileButtonStates['jump'] = false;
+    }
+    player1.keys.block = !!mobileButtonStates['block'];
+    player1.keys.charge = !!mobileButtonStates['charge'];
+
+    // Record directional input for special moves from joystick
+    if (joystickActive) {
+      var relDir = '';
+      var goingForward = (player1.facingRight && joystickInput.x > JOYSTICK_DEAD_ZONE)
+        || (!player1.facingRight && joystickInput.x < -JOYSTICK_DEAD_ZONE);
+      var goingBack = (player1.facingRight && joystickInput.x < -JOYSTICK_DEAD_ZONE)
+        || (!player1.facingRight && joystickInput.x > JOYSTICK_DEAD_ZONE);
+      var goingDown = joystickInput.y > 0.4;
+      var goingUp = joystickInput.y < -0.4;
+
+      if (goingDown && goingForward) relDir = 'DF';
+      else if (goingDown && goingBack) relDir = 'DB';
+      else if (goingDown) relDir = 'D';
+      else if (goingForward) relDir = 'F';
+      else if (goingBack) relDir = 'B';
+      else if (goingUp) relDir = 'U';
+
+      if (relDir) {
+        player1.recordInput(relDir);
+      }
+    }
+  }
+
+  // Scale canvas on resize for mobile
+  if (isMobile) {
+    window.addEventListener('resize', scaleCanvasForMobile);
+    window.addEventListener('orientationchange', function () {
+      setTimeout(scaleCanvasForMobile, 200);
+    });
+    scaleCanvasForMobile();
+  }
 
   /* ========================================
      Init
