@@ -76,6 +76,29 @@
   var hitEffects = [];
   var projectiles = [];
 
+  /* ---------- Mobile Detection & State ---------- */
+  var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    || ('ontouchstart' in window)
+    || (navigator.maxTouchPoints > 0);
+
+  var mobileControls = document.getElementById('mobileControls');
+  var joystickArea = document.getElementById('joystickArea');
+  var joystickBase = document.getElementById('joystickBase');
+  var joystickThumb = document.getElementById('joystickThumb');
+
+  // Apply mobile class to body
+  if (isMobile) {
+    document.body.classList.add('is-mobile');
+  }
+
+  // Joystick state
+  var joystickActive = false;
+  var joystickTouchId = null;
+  var joystickCenter = { x: 0, y: 0 };
+  var joystickInput = { x: 0, y: 0 }; // -1 to 1
+  var JOYSTICK_DEAD_ZONE = 0.2;
+  var JOYSTICK_MAX_DIST = 45;
+
   /* ---------- Combat constants ---------- */
   var LIGHT_ATTACK_DAMAGE = 8;
   var HEAVY_ATTACK_DAMAGE = 15;
@@ -190,6 +213,7 @@
 
   /* ---------- Mode buttons ---------- */
   btnPvP.addEventListener('click', function () {
+    if (isMobile) return; // Mobile only supports single player
     gameMode = 'pvp';
     modeSelect.classList.add('hidden');
     charSelectPanel.classList.remove('hidden');
@@ -668,6 +692,12 @@
 
     gameRunning = true;
     animFrameId = requestAnimationFrame(gameLoop);
+
+    // Mobile: show touch controls & scale
+    if (isMobile) {
+      showMobileControls();
+      scaleCanvasForMobile();
+    }
   }
 
   function applyStats(fighter, stats) {
@@ -686,6 +716,7 @@
       clearInterval(timerInterval);
       timerInterval = null;
     }
+    hideMobileControls();
   }
 
   /* ========================================
@@ -730,6 +761,11 @@
     animFrameId = requestAnimationFrame(gameLoop);
 
     drawBackground();
+
+    // Apply mobile touch input
+    if (isMobile) {
+      applyMobileInput();
+    }
 
     if (gameMode === 'pvcpu' || gameMode === 'story') {
       cpuAI(player2, player1);
@@ -1832,6 +1868,202 @@
       }
     }
   });
+
+  /* ========================================
+     Mobile Touch Controls
+     ======================================== */
+
+  function showMobileControls() {
+    if (isMobile && mobileControls) {
+      mobileControls.classList.remove('hidden');
+    }
+  }
+
+  function hideMobileControls() {
+    if (mobileControls) {
+      mobileControls.classList.add('hidden');
+    }
+  }
+
+  function scaleCanvasForMobile() {
+    if (!isMobile) return;
+    var screenW = window.innerWidth;
+    var screenH = window.innerHeight;
+    var scaleX = screenW / 1024;
+    var scaleY = screenH / 576;
+    var scale = Math.min(scaleX, scaleY);
+
+    canvas.style.width = (1024 * scale) + 'px';
+    canvas.style.height = (576 * scale) + 'px';
+
+    // Scale game screen container
+    var gs = document.getElementById('gameScreen');
+    if (gs) {
+      gs.style.width = (1024 * scale) + 'px';
+      gs.style.position = 'relative';
+    }
+  }
+
+  // --- Joystick Touch Handling ---
+  if (joystickArea) {
+    joystickArea.addEventListener('touchstart', function (e) {
+      e.preventDefault();
+      var touch = e.changedTouches[0];
+      joystickActive = true;
+      joystickTouchId = touch.identifier;
+      var rect = joystickBase.getBoundingClientRect();
+      joystickCenter.x = rect.left + rect.width / 2;
+      joystickCenter.y = rect.top + rect.height / 2;
+      updateJoystickPosition(touch);
+    }, { passive: false });
+
+    joystickArea.addEventListener('touchmove', function (e) {
+      e.preventDefault();
+      for (var i = 0; i < e.changedTouches.length; i++) {
+        if (e.changedTouches[i].identifier === joystickTouchId) {
+          updateJoystickPosition(e.changedTouches[i]);
+          break;
+        }
+      }
+    }, { passive: false });
+
+    joystickArea.addEventListener('touchend', function (e) {
+      for (var i = 0; i < e.changedTouches.length; i++) {
+        if (e.changedTouches[i].identifier === joystickTouchId) {
+          joystickActive = false;
+          joystickTouchId = null;
+          joystickInput.x = 0;
+          joystickInput.y = 0;
+          joystickThumb.style.transform = 'translate(0px, 0px)';
+          break;
+        }
+      }
+    });
+
+    joystickArea.addEventListener('touchcancel', function () {
+      joystickActive = false;
+      joystickTouchId = null;
+      joystickInput.x = 0;
+      joystickInput.y = 0;
+      joystickThumb.style.transform = 'translate(0px, 0px)';
+    });
+  }
+
+  function updateJoystickPosition(touch) {
+    var dx = touch.clientX - joystickCenter.x;
+    var dy = touch.clientY - joystickCenter.y;
+    var dist = Math.sqrt(dx * dx + dy * dy);
+
+    if (dist > JOYSTICK_MAX_DIST) {
+      dx = (dx / dist) * JOYSTICK_MAX_DIST;
+      dy = (dy / dist) * JOYSTICK_MAX_DIST;
+      dist = JOYSTICK_MAX_DIST;
+    }
+
+    joystickInput.x = dx / JOYSTICK_MAX_DIST;
+    joystickInput.y = dy / JOYSTICK_MAX_DIST;
+
+    joystickThumb.style.transform = 'translate(' + dx + 'px, ' + dy + 'px)';
+  }
+
+  // --- Mobile Attack Buttons ---
+  var mobileBtns = document.querySelectorAll('.mobile-btn');
+  var mobileButtonStates = {};
+
+  mobileBtns.forEach(function (btn) {
+    var action = btn.getAttribute('data-action');
+
+    btn.addEventListener('touchstart', function (e) {
+      e.preventDefault();
+      mobileButtonStates[action] = true;
+      btn.classList.add('active');
+    }, { passive: false });
+
+    btn.addEventListener('touchend', function (e) {
+      e.preventDefault();
+      mobileButtonStates[action] = false;
+      btn.classList.remove('active');
+    }, { passive: false });
+
+    btn.addEventListener('touchcancel', function () {
+      mobileButtonStates[action] = false;
+      btn.classList.remove('active');
+    });
+  });
+
+  // --- Apply mobile input to player every frame ---
+  function applyMobileInput() {
+    if (!isMobile || !gameRunning || !player1) return;
+
+    // Joystick → movement
+    if (joystickInput.x < -JOYSTICK_DEAD_ZONE) {
+      player1.keys.left = true;
+      player1.keys.right = false;
+    } else if (joystickInput.x > JOYSTICK_DEAD_ZONE) {
+      player1.keys.right = true;
+      player1.keys.left = false;
+    } else {
+      player1.keys.left = false;
+      player1.keys.right = false;
+    }
+
+    // Joystick up → jump
+    if (joystickInput.y < -0.5) {
+      player1.keys.jump = true;
+    } else {
+      player1.keys.jump = false;
+    }
+
+    // Joystick down → used for command input (block direction)
+    // Already handled by block button
+
+    // Mobile buttons
+    if (mobileButtonStates['attack1']) {
+      player1.keys.attack1 = true;
+      mobileButtonStates['attack1'] = false; // One-shot
+    }
+    if (mobileButtonStates['attack2']) {
+      player1.keys.attack2 = true;
+      mobileButtonStates['attack2'] = false;
+    }
+    if (mobileButtonStates['jump']) {
+      player1.keys.jump = true;
+      mobileButtonStates['jump'] = false;
+    }
+    player1.keys.block = !!mobileButtonStates['block'];
+    player1.keys.charge = !!mobileButtonStates['charge'];
+
+    // Record directional input for special moves from joystick
+    if (joystickActive) {
+      var relDir = '';
+      var goingForward = (player1.facingRight && joystickInput.x > JOYSTICK_DEAD_ZONE)
+        || (!player1.facingRight && joystickInput.x < -JOYSTICK_DEAD_ZONE);
+      var goingBack = (player1.facingRight && joystickInput.x < -JOYSTICK_DEAD_ZONE)
+        || (!player1.facingRight && joystickInput.x > JOYSTICK_DEAD_ZONE);
+      var goingDown = joystickInput.y > 0.4;
+      var goingUp = joystickInput.y < -0.4;
+
+      if (goingDown && goingForward) relDir = 'DF';
+      else if (goingDown && goingBack) relDir = 'DB';
+      else if (goingDown) relDir = 'D';
+      else if (goingForward) relDir = 'F';
+      else if (goingBack) relDir = 'B';
+      else if (goingUp) relDir = 'U';
+
+      if (relDir) {
+        player1.recordInput(relDir);
+      }
+    }
+  }
+
+  // Scale canvas on resize for mobile
+  if (isMobile) {
+    window.addEventListener('resize', scaleCanvasForMobile);
+    window.addEventListener('orientationchange', function () {
+      setTimeout(scaleCanvasForMobile, 200);
+    });
+    scaleCanvasForMobile();
+  }
 
   /* ========================================
      Init

@@ -2,7 +2,7 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>武將爭霸 Sango Fighter</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -104,6 +104,25 @@
       </div>
     </div>
     <canvas id="gameCanvas" width="1024" height="576"></canvas>
+    <!-- Mobile Touch Controls -->
+    <div id="mobileControls" class="mobile-controls hidden">
+      <!-- Virtual Joystick (bottom-left) -->
+      <div id="joystickArea" class="joystick-area">
+        <div id="joystickBase" class="joystick-base">
+          <div id="joystickThumb" class="joystick-thumb"></div>
+        </div>
+      </div>
+      <!-- Attack Buttons (top-left and right side) -->
+      <div id="mobileButtonsLeft" class="mobile-buttons-left">
+        <button class="mobile-btn mobile-btn-block" data-action="block">防</button>
+        <button class="mobile-btn mobile-btn-charge" data-action="charge">氣</button>
+      </div>
+      <div id="mobileButtonsRight" class="mobile-buttons-right">
+        <button class="mobile-btn mobile-btn-light" data-action="attack1">輕</button>
+        <button class="mobile-btn mobile-btn-heavy" data-action="attack2">重</button>
+        <button class="mobile-btn mobile-btn-jump" data-action="jump">跳</button>
+      </div>
+    </div>
     <!-- In-battle collapsible move list -->
     <div id="battleMoveList" class="battle-movelist collapsed">
       <button id="btnToggleBattleMoves" class="battle-movelist-toggle">招式表 ▶</button>
