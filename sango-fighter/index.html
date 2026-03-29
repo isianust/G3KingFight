@@ -10,11 +10,13 @@
   <!-- Character Select Screen -->
   <div id="charSelectScreen" class="screen">
     <h1 class="title">武將爭霸</h1>
-    <h2 class="subtitle">Sango Fighter</h2>
+    <h2 class="subtitle">Sango Fighter — Web Edition</h2>
 
     <div id="modeSelect">
       <button id="btnPvP" class="mode-btn">雙人對戰 (PvP)</button>
       <button id="btnPvCPU" class="mode-btn">單人對戰 (vs CPU)</button>
+      <button id="btnStory" class="mode-btn story-mode-btn">故事模式 (Story)</button>
+      <button id="btnMoveList" class="mode-btn movelist-btn">招式表</button>
     </div>
 
     <div id="charSelectPanel" class="hidden">
@@ -26,15 +28,48 @@
         <div class="selected-char">
           <div class="portrait-placeholder" id="p1Portrait">P1</div>
           <span id="p1Name">---</span>
+          <div id="p1CharInfo" class="char-info"></div>
         </div>
         <span class="vs-text">VS</span>
         <div class="selected-char">
           <div class="portrait-placeholder" id="p2Portrait">P2</div>
           <span id="p2Name">---</span>
+          <div id="p2CharInfo" class="char-info"></div>
         </div>
       </div>
       <button id="btnFight" class="fight-btn hidden">開戰！ FIGHT!</button>
     </div>
+
+    <!-- Controls info -->
+    <div class="controls-info">
+      <div class="controls-column">
+        <h4>P1 操作</h4>
+        <div>A/D — 移動</div>
+        <div>W — 跳躍</div>
+        <div>Space — 輕攻擊</div>
+        <div>F — 重攻擊</div>
+        <div>S — 防禦(配合←)</div>
+        <div>E — 蓄氣</div>
+        <div>指令+攻擊 — 招式</div>
+      </div>
+      <div class="controls-column">
+        <h4>P2 操作 (PvP)</h4>
+        <div>←/→ — 移動</div>
+        <div>↑ — 跳躍</div>
+        <div>Enter — 輕攻擊</div>
+        <div>/ — 重攻擊</div>
+        <div>↓ — 防禦(配合←)</div>
+        <div>. — 蓄氣</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Story Select Screen -->
+  <div id="storySelectScreen" class="screen hidden">
+    <h1 class="title">故事模式</h1>
+    <h2 class="subtitle">選擇勢力開始征途</h2>
+    <div id="storyCampaigns" class="story-campaigns"></div>
+    <button class="mode-btn" onclick="document.getElementById('storySelectScreen').classList.add('hidden'); document.getElementById('charSelectScreen').classList.remove('hidden');">返回</button>
   </div>
 
   <!-- Game Screen -->
@@ -42,16 +77,28 @@
     <div id="hud">
       <div class="player-hud left">
         <div class="portrait-small" id="p1HudPortrait"></div>
-        <div class="health-bar-container">
-          <div class="health-bar" id="p1HealthBar"></div>
-          <span class="player-name" id="p1HudName">P1</span>
+        <div class="bars-container">
+          <div class="health-bar-container">
+            <div class="health-bar" id="p1HealthBar"></div>
+            <span class="player-name" id="p1HudName">P1</span>
+          </div>
+          <div class="energy-bar-container">
+            <div class="energy-bar" id="p1EnergyBar"></div>
+            <span class="energy-label">氣</span>
+          </div>
         </div>
       </div>
       <div id="timerDisplay">99</div>
       <div class="player-hud right">
-        <div class="health-bar-container right-bar">
-          <div class="health-bar" id="p2HealthBar"></div>
-          <span class="player-name" id="p2HudName">P2</span>
+        <div class="bars-container">
+          <div class="health-bar-container right-bar">
+            <div class="health-bar" id="p2HealthBar"></div>
+            <span class="player-name" id="p2HudName">P2</span>
+          </div>
+          <div class="energy-bar-container right-bar">
+            <div class="energy-bar" id="p2EnergyBar"></div>
+            <span class="energy-label">氣</span>
+          </div>
         </div>
         <div class="portrait-small" id="p2HudPortrait"></div>
       </div>
@@ -64,6 +111,29 @@
     </div>
   </div>
 
+  <!-- Dialog Overlay (Story Mode) -->
+  <div id="dialogOverlay" class="dialog-overlay hidden">
+    <div class="dialog-box">
+      <div class="dialog-portrait" id="dialogPortrait"></div>
+      <div class="dialog-content">
+        <div class="dialog-speaker" id="dialogSpeaker"></div>
+        <div class="dialog-text" id="dialogText"></div>
+      </div>
+      <button id="btnDialogNext" class="dialog-next-btn">▶ 下一句</button>
+    </div>
+  </div>
+
+  <!-- Move List Overlay -->
+  <div id="moveListOverlay" class="movelist-overlay hidden">
+    <div class="movelist-header">
+      <h2>招式表 — Move List</h2>
+      <button id="btnCloseMoveList" class="mode-btn">✕ 關閉</button>
+    </div>
+    <div id="moveListContent" class="movelist-content"></div>
+  </div>
+
+  <script src="characters.js"></script>
+  <script src="story.js"></script>
   <script src="classes.js"></script>
   <script src="game.js"></script>
 </body>
