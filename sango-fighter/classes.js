@@ -829,10 +829,13 @@ class Fighter extends Sprite {
       var burstR = (1 - flashProgress) * 300 + 50;
       var burstGrad = ctx.createRadialGradient(burstX, burstY, 0, burstX, burstY, burstR);
       burstGrad.addColorStop(0, 'rgba(255, 255, 255, ' + (flashProgress * 0.7) + ')');
-      burstGrad.addColorStop(0.4, moveColor.replace(')', ', ' + (flashProgress * 0.4) + ')').replace('rgb(', 'rgba(').replace('#', ''));
+
+      // Convert move color to rgba safely
+      var burstRgba = this._colorToRgba(moveColor, flashProgress * 0.4);
+      burstGrad.addColorStop(0.4, burstRgba);
       burstGrad.addColorStop(1, 'rgba(255, 200, 100, 0)');
 
-      // Fallback for hex colors
+      // Base flash layer
       ctx.fillStyle = 'rgba(255, 255, 200, ' + (flashProgress * 0.5) + ')';
       ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
@@ -1391,5 +1394,30 @@ class Fighter extends Sprite {
     var g = Math.min(255, Math.floor(parseInt(hex.slice(3, 5), 16) * factor));
     var b = Math.min(255, Math.floor(parseInt(hex.slice(5, 7), 16) * factor));
     return 'rgb(' + r + ',' + g + ',' + b + ')';
+  }
+
+  _colorToRgba(color, alpha) {
+    // Handle hex colors (#rrggbb)
+    if (color.charAt(0) === '#') {
+      var r = parseInt(color.slice(1, 3), 16);
+      var g = parseInt(color.slice(3, 5), 16);
+      var b = parseInt(color.slice(5, 7), 16);
+      if (isNaN(r)) r = 255;
+      if (isNaN(g)) g = 200;
+      if (isNaN(b)) b = 100;
+      return 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+    }
+    // Handle rgb() colors
+    var match = color.match(/rgb\(\s*(\d+),\s*(\d+),\s*(\d+)\s*\)/);
+    if (match) {
+      return 'rgba(' + match[1] + ',' + match[2] + ',' + match[3] + ',' + alpha + ')';
+    }
+    // Handle rgba() colors — replace existing alpha
+    var matchA = color.match(/rgba\(\s*(\d+),\s*(\d+),\s*(\d+),\s*[\d.]+\s*\)/);
+    if (matchA) {
+      return 'rgba(' + matchA[1] + ',' + matchA[2] + ',' + matchA[3] + ',' + alpha + ')';
+    }
+    // Fallback
+    return 'rgba(255, 200, 100, ' + alpha + ')';
   }
 }
