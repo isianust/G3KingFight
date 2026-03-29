@@ -12,16 +12,20 @@
 
 ## 📋 Branch 版本對照表
 
+> PR 欄位對應本 repository 的 Pull Request 編號，可在 [Pull Requests 頁面](../../pulls?q=is%3Apr) 查看詳情。
+
 | 版本 | 現有 Branch 名稱 | 建議重命名為 | PR | 說明 |
 |------|------------------|-------------|-----|------|
 | V1 | `copilot/g3-king-fight` | `V1-g3-king-fight` | #1 (Draft) | 初始遊戲版本（回合制戰鬥） |
 | V2 | `copilot/setup-project-structure` | `V2-setup-project-structure` | #2 (Merged) | Sango Fighter HTML5 基礎框架、12 武將、PvP/PvCPU |
 | V3 | `copilot/improve-game-design-elements` | `V3-improve-game-design-elements` | #3 (Merged) | 全面翻新：孫吳/群雄陣營、氣系統、必殺技、故事模式 |
-| V4 | `copilot/link-to-game` | `V4-link-to-game` | — | 連結用分支（與 V3 合併點相同） |
+| V4 | `copilot/link-to-game` | `V4-link-to-game` | — | 用於啟用 GitHub Pages 的輔助分支（指向 V3 合併後的 main） |
 | V5 | `copilot/full-testing-and-battle-ui-improvements` | `V5-full-testing-and-battle-ui-improvements` | #4 (Merged) | 修復黑屏、重新映射 P1 按鍵、戰鬥中招式表 |
 | V6 | `copilot/update-game-ui-and-controls` | `V6-update-game-ui-and-controls` | #5 (Merged) | 場景背景、手機觸控、角色細節渲染、擊倒系統 |
 
 ### 🔄 如何重命名 Branch
+
+> ⚠️ 重命名 branch 需要 repository 的 **Admin** 或 **Maintain** 權限。
 
 在 GitHub 網頁上：
 1. 進入 **Settings** → **Branches**
@@ -63,7 +67,7 @@ V10-performance-optimization
 
 ### `main` Branch
 
-- `main` 始終是最新的穩定版本
+- `main` 始終是最新的已發布版本（已合併所有已完成的版本 branch）
 - 每個版本 branch 開發完成後合併到 `main`
 - 不要直接在 `main` 上開發
 
