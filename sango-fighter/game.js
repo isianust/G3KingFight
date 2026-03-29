@@ -54,6 +54,11 @@
   var btnMoveList = document.getElementById('btnMoveList');
   var btnCloseMoveList = document.getElementById('btnCloseMoveList');
 
+  // In-battle move list
+  var battleMoveList = document.getElementById('battleMoveList');
+  var battleMoveListContent = document.getElementById('battleMoveListContent');
+  var btnToggleBattleMoves = document.getElementById('btnToggleBattleMoves');
+
   /* ---------- State ---------- */
   var gameMode = ''; // 'pvp', 'pvcpu', 'story'
   var selectingFor = 1;
@@ -535,6 +540,49 @@
     return cmd.map(function (c) { return map[c] || c; }).join(' ');
   }
 
+  /* ---------- In-battle move list toggle ---------- */
+  if (btnToggleBattleMoves) {
+    btnToggleBattleMoves.addEventListener('click', function () {
+      if (battleMoveList) {
+        battleMoveList.classList.toggle('collapsed');
+        btnToggleBattleMoves.textContent = battleMoveList.classList.contains('collapsed')
+          ? '招式表 ▶'
+          : '◀ 收起';
+      }
+    });
+  }
+
+  function populateBattleMoveList() {
+    if (!battleMoveListContent) return;
+    battleMoveListContent.innerHTML = '';
+    var chars = [];
+    if (p1Char) chars.push({ label: 'P1', data: p1Char });
+    if (p2Char && !p2Char.isSoldier) chars.push({ label: 'P2', data: p2Char });
+
+    chars.forEach(function (entry) {
+      var c = entry.data;
+      var sec = document.createElement('div');
+      sec.className = 'battle-movelist-section';
+      var html = '<h4 style="color:' + c.color + '">' + entry.label + ' ' + c.name + '</h4>';
+
+      if (c.moves) {
+        c.moves.forEach(function (m) {
+          var cmdStr = commandToString(m.command);
+          html += '<div class="bml-move"><span class="bml-move-name" style="color:' +
+            (m.color || '#fff') + '">' + m.name + '</span><span class="bml-move-cmd">' +
+            cmdStr + '+攻 (' + m.energyCost + '氣)</span></div>';
+        });
+      }
+      if (c.ultimate) {
+        html += '<div class="bml-move bml-ultimate"><span class="bml-move-name" style="color:' +
+          (c.ultimate.color || '#ffd700') + '">★ ' + c.ultimate.name +
+          '</span><span class="bml-move-cmd">滿氣+U+I</span></div>';
+      }
+      sec.innerHTML = html;
+      battleMoveListContent.appendChild(sec);
+    });
+  }
+
   /* ========================================
      Game Start / Stop
      ======================================== */
@@ -577,7 +625,7 @@
       soldierType: isSoldierP2 ? p2Char.soldierType : null,
       attackBox: {
         offset: { x: 10, y: 20 },
-        width: isSoldierP2 ? (p2Char.soldierType.attackRange || 60) : 90,
+        width: isSoldierP2 && p2Char.soldierType ? (p2Char.soldierType.attackRange || 60) : 90,
         height: isSoldierP2 ? 30 : 40
       }
     });
@@ -608,6 +656,13 @@
     }, 1000);
 
     initBgParticles();
+
+    // Populate and reset in-battle move list
+    populateBattleMoveList();
+    if (battleMoveList) {
+      battleMoveList.classList.add('collapsed');
+      if (btnToggleBattleMoves) btnToggleBattleMoves.textContent = '招式表 ▶';
+    }
 
     gameRunning = true;
     animFrameId = requestAnimationFrame(gameLoop);
@@ -725,38 +780,51 @@
   }
 
   function drawBackground() {
-    // Chinese ancient style background
+    // Chinese ancient style background — brighter sky
     var grad = ctx.createLinearGradient(0, 0, 0, CANVAS_H);
-    grad.addColorStop(0, '#1a0a1e');
-    grad.addColorStop(0.3, '#2d1b3a');
-    grad.addColorStop(0.6, '#1a2a1a');
-    grad.addColorStop(1, '#0a1a0a');
+    grad.addColorStop(0, '#2e1a3a');
+    grad.addColorStop(0.3, '#4a2e5a');
+    grad.addColorStop(0.6, '#2e4a3a');
+    grad.addColorStop(1, '#1a3022');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
 
+    // Moon / sun glow
+    ctx.save();
+    ctx.globalAlpha = 0.15;
+    var moonGrad = ctx.createRadialGradient(CANVAS_W * 0.8, 80, 10, CANVAS_W * 0.8, 80, 120);
+    moonGrad.addColorStop(0, '#ffffcc');
+    moonGrad.addColorStop(1, 'transparent');
+    ctx.fillStyle = moonGrad;
+    ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+    ctx.restore();
+
     updateBgParticles();
 
-    // Mountains with Chinese style
-    ctx.fillStyle = '#1a1a2a';
+    // Mountains with Chinese style — more visible
+    ctx.fillStyle = '#2a2a44';
     drawMountain(50, GROUND_Y, 300, 150);
+    ctx.fillStyle = '#282840';
     drawMountain(350, GROUND_Y, 200, 100);
+    ctx.fillStyle = '#2c2c48';
     drawMountain(650, GROUND_Y, 350, 130);
+    ctx.fillStyle = '#262640';
     drawMountain(900, GROUND_Y, 200, 90);
 
     // Distant pagoda silhouette
-    ctx.fillStyle = '#1a1a2a';
+    ctx.fillStyle = '#33334e';
     drawPagoda(150, GROUND_Y - 80, 30, 80);
     drawPagoda(800, GROUND_Y - 60, 25, 60);
 
-    // Ground - ancient Chinese earth tone
+    // Ground - ancient Chinese earth tone — brighter
     var groundGrad = ctx.createLinearGradient(0, GROUND_Y, 0, CANVAS_H);
-    groundGrad.addColorStop(0, '#4a3a2a');
-    groundGrad.addColorStop(1, '#2a1a0a');
+    groundGrad.addColorStop(0, '#6a5a3e');
+    groundGrad.addColorStop(1, '#3e2e18');
     ctx.fillStyle = groundGrad;
     ctx.fillRect(0, GROUND_Y, CANVAS_W, CANVAS_H - GROUND_Y);
 
     // Ground line
-    ctx.strokeStyle = '#8a7a5a';
+    ctx.strokeStyle = '#b8a878';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(0, GROUND_Y);
@@ -764,7 +832,7 @@
     ctx.stroke();
 
     // Ground texture lines
-    ctx.strokeStyle = 'rgba(100, 80, 50, 0.3)';
+    ctx.strokeStyle = 'rgba(140, 120, 80, 0.35)';
     ctx.lineWidth = 1;
     for (var i = 0; i < 10; i++) {
       var y = GROUND_Y + 10 + i * 8;
@@ -1197,11 +1265,10 @@
       case 'a': player1.keys.left = true; break;
       case 'd': player1.keys.right = true; break;
       case 'w': player1.keys.jump = true; break;
-      case ' ':
-        e.preventDefault();
+      case 'u':
         player1.keys.attack1 = true;
         break;
-      case 'f':
+      case 'i':
         player1.keys.attack2 = true;
         break;
       case 's':
@@ -1236,6 +1303,8 @@
       case 'w': player1.keys.jump = false; break;
       case 's': player1.keys.block = false; break;
       case 'e': player1.keys.charge = false; break;
+      case 'u': player1.keys.attack1 = false; break;
+      case 'i': player1.keys.attack2 = false; break;
     }
 
     if (gameMode === 'pvp') {

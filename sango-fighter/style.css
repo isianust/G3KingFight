@@ -672,3 +672,94 @@ body {
   background: rgba(255, 215, 0, 0.08) !important;
   border-bottom: 2px solid #c9a84c;
 }
+
+/* === In-battle collapsible move list === */
+.battle-movelist {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  z-index: 15;
+  max-width: 340px;
+  max-height: 420px;
+  transition: max-width 0.25s ease, max-height 0.25s ease;
+  pointer-events: auto;
+}
+
+.battle-movelist.collapsed .battle-movelist-content {
+  display: none;
+}
+
+.battle-movelist-toggle {
+  display: block;
+  padding: 5px 12px;
+  font-size: 12px;
+  background: rgba(20, 15, 30, 0.85);
+  color: #ffd700;
+  border: 1px solid #c9a84c;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  margin-left: auto;
+  transition: background 0.15s;
+}
+
+.battle-movelist-toggle:hover {
+  background: rgba(40, 30, 60, 0.95);
+}
+
+.battle-movelist-content {
+  margin-top: 4px;
+  background: rgba(10, 8, 20, 0.92);
+  border: 1px solid #c9a84c;
+  border-radius: 8px;
+  padding: 8px 10px;
+  max-height: 360px;
+  overflow-y: auto;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.battle-movelist-content::-webkit-scrollbar {
+  width: 5px;
+}
+
+.battle-movelist-content::-webkit-scrollbar-thumb {
+  background: #c9a84c;
+  border-radius: 3px;
+}
+
+.battle-movelist-section {
+  margin-bottom: 8px;
+}
+
+.battle-movelist-section h4 {
+  font-size: 12px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.4);
+  padding-bottom: 2px;
+}
+
+.battle-movelist-section .bml-move {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+  gap: 6px;
+}
+
+.battle-movelist-section .bml-move-name {
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.battle-movelist-section .bml-move-cmd {
+  color: #aaa;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.battle-movelist-section .bml-ultimate {
+  color: #ffd700;
+  border-top: 1px solid rgba(255, 215, 0, 0.3);
+  margin-top: 2px;
+  padding-top: 2px;
+}

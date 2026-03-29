@@ -716,6 +716,15 @@ class Fighter extends Sprite {
       ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
     }
 
+    // Body outline for visibility
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    if (this.isBlocking) {
+      ctx.strokeRect(this.position.x + 5, this.position.y + 15, this.width - 10, this.height - 15);
+    } else {
+      ctx.strokeRect(this.position.x, this.position.y, this.width, this.height);
+    }
+
     // Soldier visual difference - smaller, simpler
     if (isSoldierUnit) {
       // Soldier armor lines
@@ -744,7 +753,7 @@ class Fighter extends Sprite {
     ctx.arc(headX, headY, headR, 0, Math.PI * 2);
     ctx.fillStyle = bodyColor;
     ctx.fill();
-    ctx.strokeStyle = '#000';
+    ctx.strokeStyle = '#fff';
     ctx.lineWidth = 2;
     ctx.stroke();
 
@@ -759,11 +768,13 @@ class Fighter extends Sprite {
     ctx.arc(headX + eyeDir * 5, headY - 2, isSoldierUnit ? 1.5 : 2, 0, Math.PI * 2);
     ctx.fill();
 
-    // Name label
+    // Name label with shadow for readability
     if (this.charData) {
-      ctx.fillStyle = '#fff';
-      ctx.font = isSoldierUnit ? '10px sans-serif' : '12px sans-serif';
+      ctx.font = isSoldierUnit ? 'bold 10px sans-serif' : 'bold 13px sans-serif';
       ctx.textAlign = 'center';
+      ctx.fillStyle = '#000';
+      ctx.fillText(this.charData.name, this.position.x + this.width / 2 + 1, this.position.y - headR * 2 - 1);
+      ctx.fillStyle = '#fff';
       ctx.fillText(this.charData.name, this.position.x + this.width / 2, this.position.y - headR * 2 - 2);
     }
 

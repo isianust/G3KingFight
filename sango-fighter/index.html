@@ -46,8 +46,8 @@
         <h4>P1 操作</h4>
         <div>A/D — 移動</div>
         <div>W — 跳躍</div>
-        <div>Space — 輕攻擊</div>
-        <div>F — 重攻擊</div>
+        <div>U — 輕攻擊</div>
+        <div>I — 重攻擊</div>
         <div>S — 防禦(配合←)</div>
         <div>E — 蓄氣</div>
         <div>指令+攻擊 — 招式</div>
@@ -104,6 +104,11 @@
       </div>
     </div>
     <canvas id="gameCanvas" width="1024" height="576"></canvas>
+    <!-- In-battle collapsible move list -->
+    <div id="battleMoveList" class="battle-movelist collapsed">
+      <button id="btnToggleBattleMoves" class="battle-movelist-toggle">招式表 ▶</button>
+      <div id="battleMoveListContent" class="battle-movelist-content"></div>
+    </div>
     <div id="roundResult" class="hidden">
       <span id="resultText"></span>
       <button id="btnRestart" class="mode-btn">再來一局</button>
