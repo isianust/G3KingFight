@@ -866,6 +866,7 @@
     var projX = owner.position.x + (owner.facingRight ? owner.width + 10 : -40);
     var projY = owner.position.y + owner.height * 0.3;
     var projDamage = move.damage * (owner._atkMultiplier || 1) * owner.buffMultiplier;
+    // Note: defender's _defMultiplier is applied at hit time in updateProjectiles
 
     projectiles.push(new Projectile({
       x: projX,
@@ -906,7 +907,9 @@
         };
         if (rectanglesOverlap(projRect, targetRect)) {
           var knockDir = proj.vx > 0 ? 1 : -1;
-          target.takeHit(proj.damage, knockDir * 8);
+          var adjustedDamage = Math.round(proj.damage * (target._defMultiplier || 1));
+          if (adjustedDamage < 1) adjustedDamage = 1;
+          target.takeHit(adjustedDamage, knockDir * 8);
           spawnHitEffect(target.position.x + target.width / 2, target.position.y + target.height * 0.3, true);
 
           // Attacker gains energy
@@ -1080,8 +1083,7 @@
         btnRestart.textContent = '繼續 →';
       } else {
         btnRestart.textContent = '再試一次';
-        // Reset battle (don't advance)
-        storyBattleIndex = Math.max(0, storyBattleIndex);
+        // Keep storyBattleIndex unchanged so the player retries the same battle
       }
     } else {
       btnRestart.textContent = '再來一局';

@@ -191,7 +191,7 @@ class Fighter extends Sprite {
 
     // Health
     if (isSoldier && soldierType) {
-      this.maxHealth = 100 * soldierType.healthMultiplier; // 1/5 = 20HP
+      this.maxHealth = 100 * soldierType.healthMultiplier; // 0.2 = 20HP (1/5 of hero)
       this.health = this.maxHealth;
     } else {
       this.maxHealth = 100;
