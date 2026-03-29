@@ -76,7 +76,7 @@
   var hitEffects = [];
   var projectiles = [];
   var currentStage = 0;
-  var STAGE_COUNT = 5;
+  var STAGE_COUNT = 6;
 
   /* ---------- Screen Effects ---------- */
   var screenShake = { intensity: 0, duration: 0, timer: 0 };
@@ -112,6 +112,27 @@
   var LIGHT_ATTACK_KNOCKBACK = 5;
   var HEAVY_ATTACK_KNOCKBACK = 10;
 
+  /* ---------- Difficulty settings ---------- */
+  var gameDifficulty = 'easy'; // 'easy', 'normal', 'hard'
+  var DIFFICULTY_SETTINGS = {
+    easy:   { label: '初級', aiBlockRate: 0.4, aiAttackRate: 0.12, aiSpecialRate: 0.06, aiUltRate: 0.05, dmgMultiplier: 1.0, statBonus: 0 },
+    normal: { label: '中級', aiBlockRate: 0.55, aiAttackRate: 0.18, aiSpecialRate: 0.10, aiUltRate: 0.08, dmgMultiplier: 1.3, statBonus: 1 },
+    hard:   { label: '高級', aiBlockRate: 0.7, aiAttackRate: 0.25, aiSpecialRate: 0.15, aiUltRate: 0.12, dmgMultiplier: 1.6, statBonus: 2 }
+  };
+
+  /* ---------- Stage selection state ---------- */
+  var selectedStage = -1; // -1 = random
+
+  /* ---------- Stage names ---------- */
+  var STAGE_NAMES = [
+    { name: '黃昏戰場', nameEn: 'Battlefield at Dusk' },
+    { name: '皇宮夜景', nameEn: 'Imperial Palace' },
+    { name: '赤壁烽火', nameEn: 'Red Cliff' },
+    { name: '竹林幽境', nameEn: 'Bamboo Forest' },
+    { name: '古橋破曉', nameEn: 'Ancient Bridge' },
+    { name: '藍天白雲', nameEn: 'Blue Sky Bliss' }
+  ];
+
   /* ---------- Story mode state ---------- */
   var storyFaction = '';
   var storyChapterIndex = 0;
@@ -120,6 +141,7 @@
   var storyDialogIndex = 0;
   var storyPhase = ''; // 'select', 'dialog_before', 'battle', 'dialog_after', 'chapter_end', 'victory'
   var storyHeroChar = null;
+  var storyP1Won = false;
 
   /* ========================================
      Character Select
@@ -253,8 +275,13 @@
   btnRestart.addEventListener('click', function () {
     roundResult.classList.add('hidden');
     if (gameMode === 'story') {
-      // In story mode, continue to next battle or chapter
-      storyNextStep();
+      if (storyP1Won) {
+        // Player won - advance to next battle or chapter
+        storyNextStep();
+      } else {
+        // Player lost - retry the same battle
+        startGame();
+      }
     } else {
       startGame();
     }
@@ -631,6 +658,87 @@
   }
 
   /* ========================================
+     Stage List
+     ======================================== */
+
+  var stageListOverlay = document.getElementById('stageListOverlay');
+  var stageListContent = document.getElementById('stageListContent');
+  var btnStageList = document.getElementById('btnStageList');
+  var btnCloseStageList = document.getElementById('btnCloseStageList');
+
+  if (btnStageList) {
+    btnStageList.addEventListener('click', function () {
+      showStageList();
+    });
+  }
+
+  if (btnCloseStageList) {
+    btnCloseStageList.addEventListener('click', function () {
+      stageListOverlay.classList.add('hidden');
+    });
+  }
+
+  function showStageList() {
+    if (!stageListContent || !stageListOverlay) return;
+    stageListContent.innerHTML = '';
+
+    // Stage color themes for preview
+    var stageColors = [
+      ['#c44e2d', '#f4c462'], // Battlefield at Dusk
+      ['#0a0a2e', '#1a1a3e'], // Imperial Palace
+      ['#8b0000', '#ff4500'], // Red Cliff
+      ['#2a5a2a', '#6ab06a'], // Bamboo Forest
+      ['#3a4a6a', '#e8c888'], // Ancient Bridge
+      ['#1e90ff', '#33aa33']  // Blue Sky Bliss
+    ];
+
+    var randomCard = document.createElement('div');
+    randomCard.className = 'stage-card' + (selectedStage === -1 ? ' selected-stage' : '');
+    randomCard.innerHTML =
+      '<div class="stage-preview" style="background:linear-gradient(135deg, #666, #999);">🎲</div>' +
+      '<div class="stage-name">隨機</div>' +
+      '<div class="stage-name-en">Random</div>';
+    randomCard.addEventListener('click', function () {
+      selectedStage = -1;
+      showStageList();
+    });
+    stageListContent.appendChild(randomCard);
+
+    for (var i = 0; i < STAGE_NAMES.length; i++) {
+      (function (idx) {
+        var stage = STAGE_NAMES[idx];
+        var colors = stageColors[idx] || ['#666', '#999'];
+        var card = document.createElement('div');
+        card.className = 'stage-card' + (selectedStage === idx ? ' selected-stage' : '');
+        card.innerHTML =
+          '<div class="stage-preview" style="background:linear-gradient(135deg, ' + colors[0] + ', ' + colors[1] + ');"></div>' +
+          '<div class="stage-name">' + stage.name + '</div>' +
+          '<div class="stage-name-en">' + stage.nameEn + '</div>';
+        card.addEventListener('click', function () {
+          selectedStage = idx;
+          showStageList();
+        });
+        stageListContent.appendChild(card);
+      })(i);
+    }
+
+    stageListOverlay.classList.remove('hidden');
+  }
+
+  /* ========================================
+     Difficulty Selection
+     ======================================== */
+
+  var diffBtns = document.querySelectorAll('.diff-btn');
+  diffBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      diffBtns.forEach(function (b) { b.classList.remove('selected'); });
+      btn.classList.add('selected');
+      gameDifficulty = btn.dataset.diff;
+    });
+  });
+
+  /* ========================================
      Game Start / Stop
      ======================================== */
 
@@ -685,6 +793,20 @@
     applyStats(player1, p1Char.stats);
     applyStats(player2, p2Char.stats);
 
+    // Apply difficulty multipliers to CPU (player2)
+    if (gameMode === 'pvcpu' || gameMode === 'story') {
+      var diff = DIFFICULTY_SETTINGS[gameDifficulty] || DIFFICULTY_SETTINGS.easy;
+      player2._atkMultiplier *= diff.dmgMultiplier;
+      // Boost CPU stats by difficulty bonus
+      var boostedStats = {
+        atk: Math.min(10, p2Char.stats.atk + diff.statBonus),
+        def: Math.min(10, p2Char.stats.def + diff.statBonus),
+        spd: Math.min(10, p2Char.stats.spd + diff.statBonus)
+      };
+      applyStats(player2, boostedStats);
+      player2._atkMultiplier *= diff.dmgMultiplier;
+    }
+
     p1HudName.textContent = p1Char.name;
     p2HudName.textContent = p2Char.name;
     p1HudPortrait.textContent = p1Char.name.charAt(0);
@@ -708,7 +830,11 @@
     }, 1000);
 
     initBgParticles();
-    currentStage = Math.floor(Math.random() * STAGE_COUNT);
+    if (selectedStage >= 0) {
+      currentStage = selectedStage;
+    } else {
+      currentStage = Math.floor(Math.random() * STAGE_COUNT);
+    }
 
     // Populate and reset in-battle move list
     populateBattleMoveList();
@@ -878,7 +1004,8 @@
       case 2: drawStage_RedCliff(); break;
       case 3: drawStage_BambooForest(); break;
       case 4: drawStage_AncientBridge(); break;
-      default: drawStage_BattlefieldDusk(); break;
+      case 5: drawStage_BlueSkyBliss(); break;
+      default: drawStage_BlueSkyBliss(); break;
     }
   }
 
@@ -1299,6 +1426,82 @@
       ctx.lineTo(pl, GROUND_Y + 15);
       ctx.stroke();
     }
+  }
+
+  // Stage 5: Blue Sky Bliss — 藍天白雲 (Windows XP Bliss-like fallback)
+  function drawStage_BlueSkyBliss() {
+    // Sky gradient — bright blue sky
+    var grad = ctx.createLinearGradient(0, 0, 0, GROUND_Y);
+    grad.addColorStop(0, '#1e90ff');
+    grad.addColorStop(0.3, '#3aa5ff');
+    grad.addColorStop(0.6, '#66bbff');
+    grad.addColorStop(0.85, '#99ddff');
+    grad.addColorStop(1, '#cceeff');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, CANVAS_W, GROUND_Y);
+
+    // Fluffy white clouds
+    drawCloud(80, 60, 220, 50, 'rgba(255,255,255,0.9)');
+    drawCloud(350, 40, 280, 60, 'rgba(255,255,255,0.85)');
+    drawCloud(700, 80, 200, 45, 'rgba(255,255,255,0.88)');
+    drawCloud(900, 30, 180, 40, 'rgba(255,255,255,0.82)');
+    drawCloud(200, 120, 150, 35, 'rgba(255,255,255,0.7)');
+    drawCloud(550, 100, 170, 38, 'rgba(255,255,255,0.75)');
+
+    // Rolling green hills
+    ctx.fillStyle = '#44bb44';
+    ctx.beginPath();
+    ctx.moveTo(0, GROUND_Y);
+    ctx.quadraticCurveTo(200, GROUND_Y - 60, 400, GROUND_Y - 20);
+    ctx.quadraticCurveTo(600, GROUND_Y - 50, 800, GROUND_Y - 10);
+    ctx.quadraticCurveTo(900, GROUND_Y - 40, CANVAS_W, GROUND_Y - 15);
+    ctx.lineTo(CANVAS_W, GROUND_Y);
+    ctx.closePath();
+    ctx.fill();
+
+    // Distant hills
+    ctx.fillStyle = '#66cc66';
+    ctx.beginPath();
+    ctx.moveTo(0, GROUND_Y - 10);
+    ctx.quadraticCurveTo(150, GROUND_Y - 35, 300, GROUND_Y - 5);
+    ctx.quadraticCurveTo(500, GROUND_Y - 30, 700, GROUND_Y);
+    ctx.lineTo(CANVAS_W, GROUND_Y);
+    ctx.lineTo(0, GROUND_Y);
+    ctx.closePath();
+    ctx.fill();
+
+    updateBgParticles();
+
+    // Ground — lush green grass
+    var floorGrad = ctx.createLinearGradient(0, GROUND_Y, 0, CANVAS_H);
+    floorGrad.addColorStop(0, '#33aa33');
+    floorGrad.addColorStop(0.3, '#2d9a2d');
+    floorGrad.addColorStop(1, '#228822');
+    ctx.fillStyle = floorGrad;
+    ctx.fillRect(0, GROUND_Y, CANVAS_W, CANVAS_H - GROUND_Y);
+
+    // Grass tufts
+    ctx.strokeStyle = '#55cc55';
+    ctx.lineWidth = 2;
+    for (var gt = 0; gt < CANVAS_W; gt += 30) {
+      var gx = gt + Math.sin(gt) * 5;
+      ctx.beginPath();
+      ctx.moveTo(gx, GROUND_Y);
+      ctx.lineTo(gx - 3, GROUND_Y - 8);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(gx + 5, GROUND_Y);
+      ctx.lineTo(gx + 8, GROUND_Y - 6);
+      ctx.stroke();
+    }
+
+    // Ground line
+    ctx.strokeStyle = '#44aa44';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(0, GROUND_Y);
+    ctx.lineTo(CANVAS_W, GROUND_Y);
+    ctx.stroke();
   }
 
   // Helper: Draw cloud
@@ -1856,11 +2059,11 @@
 
     // In story mode, update button text
     if (gameMode === 'story') {
+      storyP1Won = p1Won;
       if (p1Won) {
         btnRestart.textContent = '繼續 →';
       } else {
         btnRestart.textContent = '再試一次';
-        // Keep storyBattleIndex unchanged so the player retries the same battle
       }
     } else {
       btnRestart.textContent = '再來一局';
@@ -1886,10 +2089,11 @@
     cpu.keys.block = false;
 
     var attackRange = cpu.attackBox.width + cpu.width * 0.5;
+    var diff = DIFFICULTY_SETTINGS[gameDifficulty] || DIFFICULTY_SETTINGS.easy;
 
     // CPU blocking logic
     if (target.isAttacking && dist < attackRange + 60) {
-      if (Math.random() < 0.4) {
+      if (Math.random() < diff.aiBlockRate) {
         // Block: hold back + down
         if (dx > 0) cpu.keys.left = true;
         else cpu.keys.right = true;
@@ -1921,7 +2125,7 @@
     // CPU special move logic
     if (!cpu.isSoldier && cpu.charData && cpu.charData.moves && dist < attackRange + 50) {
       // Try ultimate if energy is full
-      if (cpu.energy >= MAX_ENERGY && cpu.charData.ultimate && Math.random() < 0.05) {
+      if (cpu.energy >= MAX_ENERGY && cpu.charData.ultimate && Math.random() < diff.aiUltRate) {
         cpu.keys.attack1 = true;
         cpu.keys.attack2 = true;
         // Simulate command input
@@ -1931,7 +2135,7 @@
       }
 
       // Try special moves
-      if (Math.random() < 0.06) {
+      if (Math.random() < diff.aiSpecialRate) {
         var availableMoves = cpu.charData.moves.filter(function (m) { return cpu.energy >= m.energyCost; });
         if (availableMoves.length > 0) {
           var move = availableMoves[Math.floor(Math.random() * availableMoves.length)];
@@ -1945,9 +2149,9 @@
 
     // Basic attacks
     if (dist < attackRange + 20 && cpu.attackCooldown <= 0 && !cpu.isAttacking) {
-      if (Math.random() < 0.12) {
+      if (Math.random() < diff.aiAttackRate) {
         cpu.keys.attack1 = true;
-      } else if (Math.random() < 0.04) {
+      } else if (Math.random() < diff.aiAttackRate * 0.35) {
         cpu.keys.attack2 = true;
       }
     }

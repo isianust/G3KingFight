@@ -17,6 +17,15 @@
       <button id="btnPvCPU" class="mode-btn">單人對戰 (vs CPU)</button>
       <button id="btnStory" class="mode-btn story-mode-btn">故事模式 (Story)</button>
       <button id="btnMoveList" class="mode-btn movelist-btn">招式表</button>
+      <button id="btnStageList" class="mode-btn stagelist-btn">關卡列表</button>
+    </div>
+
+    <!-- Difficulty Selection -->
+    <div id="difficultySelect" class="difficulty-select">
+      <span class="difficulty-label">難度：</span>
+      <button class="diff-btn selected" data-diff="easy">初級</button>
+      <button class="diff-btn" data-diff="normal">中級</button>
+      <button class="diff-btn" data-diff="hard">高級</button>
     </div>
 
     <div id="charSelectPanel" class="hidden">
@@ -147,6 +156,15 @@
     </div>
   </div>
 
+  <!-- Stage List Overlay -->
+  <div id="stageListOverlay" class="movelist-overlay hidden">
+    <div class="movelist-header">
+      <h2>關卡列表 — Stage List</h2>
+      <button id="btnCloseStageList" class="mode-btn">✕ 關閉</button>
+    </div>
+    <div id="stageListContent" class="stagelist-content"></div>
+  </div>
+
   <!-- Move List Overlay -->
   <div id="moveListOverlay" class="movelist-overlay hidden">
     <div class="movelist-header">
@@ -155,6 +173,9 @@
     </div>
     <div id="moveListContent" class="movelist-content"></div>
   </div>
+
+  <!-- Version Display -->
+  <div id="versionDisplay" class="version-display">V0001</div>
 
   <script src="characters.js"></script>
   <script src="story.js"></script>

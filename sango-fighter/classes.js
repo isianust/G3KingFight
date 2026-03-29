@@ -500,16 +500,8 @@ class Fighter extends Sprite {
       return;
     }
 
-    // Knockdown on heavy hits (KOF/SF style)
-    if (damage >= this.knockdownThreshold) {
-      this._startKnockdown(knockback);
-    } else {
-      this.hitstun = 12;
-      this.knockbackVel = knockback;
-      this.currentAnim = ANIM.TAKE_HIT;
-      this.framesCurrent = 0;
-      this.framesElapsed = 0;
-    }
+    // All hits cause knockdown
+    this._startKnockdown(knockback);
     this.isAttacking = false;
     this.isUsingSpecial = false;
     this.attackDuration = 0;

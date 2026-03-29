@@ -1378,3 +1378,118 @@ body.is-mobile .movelist-overlay {
 body.is-mobile .movelist-header h2 {
   font-size: clamp(16px, 4vw, 24px);
 }
+
+/* === Difficulty Selection === */
+.difficulty-select {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.difficulty-label {
+  color: #c9a84c;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.diff-btn {
+  padding: 6px 18px;
+  border: 2px solid #555;
+  border-radius: 6px;
+  background: #1a1a2e;
+  color: #ccc;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.diff-btn:hover {
+  border-color: #c9a84c;
+  color: #fff;
+}
+
+.diff-btn.selected {
+  border-color: #ffd700;
+  background: #2a2a4e;
+  color: #ffd700;
+  font-weight: bold;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+/* === Stage List === */
+.stagelist-btn {
+  background: linear-gradient(180deg, #1a6a3a, #0a4a2a) !important;
+  border-color: #33aa55 !important;
+}
+
+.stagelist-btn:hover {
+  background: linear-gradient(180deg, #2a7a4a, #1a5a3a) !important;
+}
+
+.stagelist-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  padding: 15px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.stage-card {
+  border: 2px solid #444;
+  border-radius: 8px;
+  background: #1a1a2e;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.stage-card:hover {
+  border-color: #c9a84c;
+  transform: scale(1.05);
+}
+
+.stage-card.selected-stage {
+  border-color: #ffd700;
+  background: #2a2a4e;
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+.stage-preview {
+  width: 100%;
+  height: 80px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+.stage-name {
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.stage-name-en {
+  color: #aaa;
+  font-size: 11px;
+}
+
+/* === Version Display === */
+.version-display {
+  position: fixed;
+  bottom: 8px;
+  right: 12px;
+  color: #555;
+  font-size: 12px;
+  font-family: monospace;
+  pointer-events: none;
+  z-index: 1;
+}
