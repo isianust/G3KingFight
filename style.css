@@ -1,0 +1,347 @@
+/* ===========================
+   G3 King Fight – Stylesheet
+   =========================== */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: linear-gradient(135deg, #1a0a2e 0%, #2d1b5e 50%, #1a0a2e 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f0e6ff;
+}
+
+#app {
+  width: 100%;
+  max-width: 900px;
+  padding: 20px;
+}
+
+/* ── Screens ── */
+.screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  animation: fadeIn 0.4s ease;
+}
+
+.screen.active {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Title Screen ── */
+.game-title {
+  font-size: 3.5rem;
+  font-weight: 900;
+  text-align: center;
+  background: linear-gradient(90deg, #ffd700, #ff8c00, #ffd700);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: #c9b8e8;
+  margin-bottom: 10px;
+}
+
+/* ── Buttons ── */
+.btn {
+  padding: 12px 36px;
+  font-size: 1rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+  min-width: 180px;
+}
+
+.btn:hover  { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+.btn:active { transform: translateY(0);    box-shadow: none; }
+
+.btn-primary {
+  background: linear-gradient(135deg, #ffd700, #ff8c00);
+  color: #1a0a2e;
+}
+
+.btn-secondary {
+  background: rgba(255,255,255,0.12);
+  color: #f0e6ff;
+  border: 1px solid rgba(255,255,255,0.25);
+}
+
+/* ── How To Play ── */
+#how-to-play-screen h2 {
+  font-size: 2rem;
+  color: #ffd700;
+}
+
+.rules {
+  background: rgba(255,255,255,0.07);
+  border-radius: 12px;
+  padding: 24px 32px;
+  max-width: 500px;
+  line-height: 1.8;
+}
+
+.rules ul {
+  margin-left: 20px;
+  margin-top: 4px;
+}
+
+/* ── Battle Arena ── */
+.battle-arena {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  background: rgba(0,0,0,0.3);
+  border-radius: 16px;
+  padding: 24px 20px;
+  border: 1px solid rgba(255,215,0,0.2);
+}
+
+/* ── Fighter Panel ── */
+.fighter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 210px;
+}
+
+.fighter-crown {
+  font-size: 2rem;
+}
+
+.fighter-sprite {
+  font-size: 5rem;
+  line-height: 1;
+  transition: transform 0.15s;
+}
+
+.fighter-sprite.shake {
+  animation: shake 0.3s ease;
+}
+
+@keyframes shake {
+  0%,100% { transform: translateX(0); }
+  25%      { transform: translateX(-8px); }
+  75%      { transform: translateX(8px); }
+}
+
+.fighter-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffd700;
+}
+
+/* ── Stat Bars ── */
+.stat-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.stat-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: 24px;
+  text-align: right;
+  color: #c9b8e8;
+}
+
+.bar {
+  flex: 1;
+  height: 12px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.4s ease;
+}
+
+.hp-fill { background: linear-gradient(90deg, #ff4444, #ff8866); }
+.mp-fill { background: linear-gradient(90deg, #4488ff, #88ccff); }
+
+.stat-value {
+  font-size: 0.75rem;
+  width: 28px;
+  text-align: left;
+  color: #f0e6ff;
+}
+
+/* ── Status Badges ── */
+.status-badges {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+  min-height: 24px;
+}
+
+.badge {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.badge-guard  { background: #2255cc; color: #aaddff; }
+.badge-stun   { background: #884400; color: #ffcc88; }
+
+/* ── Battle Center ── */
+.battle-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.turn-indicator {
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 6px 18px;
+  border-radius: 20px;
+  background: rgba(255,215,0,0.15);
+  border: 1px solid rgba(255,215,0,0.4);
+  color: #ffd700;
+  text-align: center;
+}
+
+.battle-log {
+  background: rgba(0,0,0,0.4);
+  border-radius: 10px;
+  padding: 12px;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #ddd;
+}
+
+.battle-log p {
+  margin-bottom: 4px;
+}
+
+.battle-log p:last-child {
+  color: #fff;
+  font-weight: 600;
+}
+
+.battle-log::-webkit-scrollbar { width: 4px; }
+.battle-log::-webkit-scrollbar-thumb { background: rgba(255,215,0,0.3); border-radius: 2px; }
+
+.vs-text {
+  font-size: 2rem;
+}
+
+/* ── Action Panel ── */
+.action-panel {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.08);
+  color: #f0e6ff;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  gap: 4px;
+}
+
+.action-btn:hover:not(:disabled) {
+  background: rgba(255,215,0,0.15);
+  border-color: rgba(255,215,0,0.5);
+  transform: translateY(-2px);
+}
+
+.action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.action-desc {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: #c9b8e8;
+}
+
+/* ── Result Screen ── */
+.result-icon {
+  font-size: 5rem;
+  margin-bottom: 10px;
+}
+
+.result-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #ffd700;
+}
+
+.result-message {
+  font-size: 1rem;
+  color: #c9b8e8;
+  margin-bottom: 10px;
+}
+
+/* ── Damage Floater ── */
+.floater {
+  position: fixed;
+  font-size: 1.5rem;
+  font-weight: 900;
+  pointer-events: none;
+  animation: floatUp 1.2s ease forwards;
+  z-index: 999;
+}
+
+@keyframes floatUp {
+  0%   { opacity: 1; transform: translateY(0) scale(1); }
+  60%  { opacity: 1; transform: translateY(-50px) scale(1.2); }
+  100% { opacity: 0; transform: translateY(-80px) scale(0.8); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .game-title { font-size: 2.4rem; }
+  .battle-arena { flex-direction: column; align-items: center; }
+  .fighter { flex-direction: row; flex-wrap: wrap; justify-content: center; flex: unset; width: 100%; }
+  .action-panel { grid-template-columns: repeat(2, 1fr); }
+}

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>G3 King Fight</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Title Screen -->
+    <div id="title-screen" class="screen active">
+      <h1 class="game-title">G3 King Fight</h1>
+      <p class="subtitle">A turn-based battle of kings</p>
+      <button id="start-btn" class="btn btn-primary">Start Game</button>
+      <button id="how-to-play-btn" class="btn btn-secondary">How to Play</button>
+    </div>
+
+    <!-- How to Play Screen -->
+    <div id="how-to-play-screen" class="screen">
+      <h2>How to Play</h2>
+      <div class="rules">
+        <p>⚔️ Two kings battle each other in turns.</p>
+        <p>❤️ Each king starts with <strong>100 HP</strong>.</p>
+        <p>🎮 On your turn, choose an action:</p>
+        <ul>
+          <li><strong>Attack</strong> – Deal 10–25 damage to your opponent.</li>
+          <li><strong>Heavy Strike</strong> – Deal 20–40 damage but costs 5 MP.</li>
+          <li><strong>Guard</strong> – Reduce incoming damage by 50% next turn.</li>
+          <li><strong>Heal</strong> – Restore 15–25 HP (costs 10 MP).</li>
+        </ul>
+        <p>💧 Each king starts with <strong>50 MP</strong>, regenerating 5 MP per turn.</p>
+        <p>👑 The last king standing wins!</p>
+      </div>
+      <button id="back-btn" class="btn btn-secondary">Back</button>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen">
+      <div class="battle-arena">
+        <!-- Player 1 (Left / Human) -->
+        <div class="fighter" id="player-fighter">
+          <div class="fighter-crown">👑</div>
+          <div class="fighter-sprite player-sprite">🧙</div>
+          <div class="fighter-name">You</div>
+          <div class="stat-bar">
+            <span class="stat-label">HP</span>
+            <div class="bar hp-bar-container">
+              <div class="bar-fill hp-fill" id="player-hp-bar"></div>
+            </div>
+            <span class="stat-value" id="player-hp-value">100</span>
+          </div>
+          <div class="stat-bar">
+            <span class="stat-label">MP</span>
+            <div class="bar mp-bar-container">
+              <div class="bar-fill mp-fill" id="player-mp-bar"></div>
+            </div>
+            <span class="stat-value" id="player-mp-value">50</span>
+          </div>
+          <div class="status-badges" id="player-status"></div>
+        </div>
+
+        <!-- Battle Log -->
+        <div class="battle-center">
+          <div id="turn-indicator" class="turn-indicator">Your Turn</div>
+          <div id="battle-log" class="battle-log">
+            <p>The battle begins!</p>
+          </div>
+          <div id="vs-text" class="vs-text">⚔️</div>
+        </div>
+
+        <!-- Enemy (Right / AI) -->
+        <div class="fighter" id="enemy-fighter">
+          <div class="fighter-crown">👑</div>
+          <div class="fighter-sprite enemy-sprite">🤴</div>
+          <div class="fighter-name">Enemy King</div>
+          <div class="stat-bar">
+            <span class="stat-label">HP</span>
+            <div class="bar hp-bar-container">
+              <div class="bar-fill hp-fill" id="enemy-hp-bar"></div>
+            </div>
+            <span class="stat-value" id="enemy-hp-value">100</span>
+          </div>
+          <div class="stat-bar">
+            <span class="stat-label">MP</span>
+            <div class="bar mp-bar-container">
+              <div class="bar-fill mp-fill" id="enemy-mp-bar"></div>
+            </div>
+            <span class="stat-value" id="enemy-mp-value">50</span>
+          </div>
+          <div class="status-badges" id="enemy-status"></div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div id="action-panel" class="action-panel">
+        <button class="action-btn" id="btn-attack" data-action="attack">
+          ⚔️ Attack
+          <span class="action-desc">10–25 dmg</span>
+        </button>
+        <button class="action-btn" id="btn-heavy" data-action="heavy">
+          💥 Heavy Strike
+          <span class="action-desc">20–40 dmg · 5 MP</span>
+        </button>
+        <button class="action-btn" id="btn-guard" data-action="guard">
+          🛡️ Guard
+          <span class="action-desc">-50% next hit</span>
+        </button>
+        <button class="action-btn" id="btn-heal" data-action="heal">
+          💊 Heal
+          <span class="action-desc">+15–25 HP · 10 MP</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Result Screen -->
+    <div id="result-screen" class="screen">
+      <div id="result-icon" class="result-icon"></div>
+      <h2 id="result-title" class="result-title"></h2>
+      <p id="result-message" class="result-message"></p>
+      <button id="play-again-btn" class="btn btn-primary">Play Again</button>
+      <button id="menu-btn" class="btn btn-secondary">Main Menu</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
