@@ -53,6 +53,12 @@
   var bgParticles = [];
   var hitEffects = [];
 
+  /* ---------- Combat constants ---------- */
+  var LIGHT_ATTACK_DAMAGE = 8;
+  var HEAVY_ATTACK_DAMAGE = 15;
+  var LIGHT_ATTACK_KNOCKBACK = 5;
+  var HEAVY_ATTACK_KNOCKBACK = 10;
+
   /* ========================================
      Character Select
      ======================================== */
@@ -415,13 +421,13 @@
     if (rectanglesOverlap(atkRect, defRect)) {
       attacker.hasHitThisSwing = true;
 
-      var baseDamage = attacker.attackType === 1 ? 8 : 15;
+      var baseDamage = attacker.attackType === 1 ? LIGHT_ATTACK_DAMAGE : HEAVY_ATTACK_DAMAGE;
       var damage = baseDamage * (attacker._atkMultiplier || 1) * (defender._defMultiplier || 1);
       damage = Math.round(damage);
       if (damage < 1) damage = 1;
 
       var knockDir = attacker.facingRight ? 1 : -1;
-      var knockForce = attacker.attackType === 1 ? 5 : 10;
+      var knockForce = attacker.attackType === 1 ? LIGHT_ATTACK_KNOCKBACK : HEAVY_ATTACK_KNOCKBACK;
       defender.takeHit(damage, knockDir * knockForce);
 
       spawnHitEffect(

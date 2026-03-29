@@ -182,13 +182,7 @@ class Fighter extends Sprite {
     // Input state (set externally)
     this.keys = { left: false, right: false, jump: false, attack1: false, attack2: false };
 
-    // Block
-    this.isBlocking = false;
-    this.blockStun = 0;
 
-    // Combo / special
-    this.comboCount = 0;
-    this.lastAttackTime = 0;
   }
 
   /* ---- attack ---- */
