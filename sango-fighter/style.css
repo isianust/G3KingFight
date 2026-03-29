@@ -11,6 +11,7 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
+  min-height: 100dvh;
   font-family: 'Microsoft JhengHei', 'PingFang TC', 'Noto Sans TC', sans-serif;
   color: #fff;
   overflow: hidden;
@@ -21,6 +22,8 @@ body.is-mobile {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .screen {
@@ -503,8 +506,8 @@ body.is-mobile {
   position: absolute;
   top: 0;
   left: 0;
-  width: 1024px;
-  height: 576px;
+  width: 100%;
+  height: 100%;
   background: rgba(0, 0, 0, 0.75);
   display: flex;
   flex-direction: column;
@@ -533,7 +536,8 @@ body.is-mobile {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 1024px;
+  width: 100%;
+  max-width: 1024px;
   z-index: 30;
   pointer-events: auto;
 }
@@ -926,12 +930,12 @@ body.is-mobile {
   }
 
   #timerDisplay {
-    font-size: 24px;
+    font-size: clamp(16px, 3.5vw, 24px);
     min-width: 40px;
   }
 
   .title {
-    font-size: 28px;
+    font-size: clamp(22px, 5vw, 28px);
     letter-spacing: 4px;
   }
 
@@ -944,9 +948,9 @@ body.is-mobile {
   }
 
   .char-cell {
-    width: 70px;
-    height: 58px;
-    font-size: 10px;
+    width: clamp(55px, 14vw, 70px);
+    height: clamp(45px, 11vw, 58px);
+    font-size: clamp(9px, 2vw, 10px);
   }
 
   .controls-info {
@@ -962,6 +966,16 @@ body.is-mobile {
     border: none;
     padding: 10px;
     max-height: 100vh;
+    max-height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #storySelectScreen {
+    max-height: 100vh;
+    max-height: 100dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   #selectedDisplay {
@@ -986,17 +1000,30 @@ body.is-mobile {
   .battle-movelist {
     display: none;
   }
+
+  /* Dialog overlay responsive */
+  .dialog-overlay {
+    width: 100vw;
+    max-width: 100vw;
+    left: 0;
+    transform: none;
+  }
+
+  #resultText {
+    font-size: clamp(28px, 7vw, 48px);
+    letter-spacing: 3px;
+  }
 }
 
 @media (max-width: 600px) {
   .title {
-    font-size: 22px;
+    font-size: clamp(18px, 5.5vw, 22px);
     letter-spacing: 2px;
   }
 
   .char-cell {
-    width: 60px;
-    height: 50px;
+    width: clamp(50px, 17vw, 60px);
+    height: clamp(42px, 14vw, 50px);
     font-size: 9px;
   }
 
@@ -1015,37 +1042,186 @@ body.is-mobile {
   }
 
   .health-bar-container {
-    width: 25vw;
-    height: 16px;
+    width: 30vw;
+    height: 14px;
   }
 
   .energy-bar-container {
-    width: 25vw;
-    height: 7px;
+    width: 30vw;
+    height: 6px;
   }
 
   .portrait-small {
-    width: 32px;
-    height: 32px;
-    font-size: 9px;
+    width: 28px;
+    height: 28px;
+    font-size: 8px;
   }
 
   .player-name {
-    font-size: 10px;
+    font-size: 9px;
   }
 
   .dialog-box {
-    padding: 10px 12px;
+    padding: 12px 10px;
+    gap: 10px;
+    flex-wrap: nowrap;
   }
 
   .dialog-portrait {
-    width: 40px;
-    height: 40px;
-    font-size: 18px;
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
   }
 
   .dialog-text {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .dialog-speaker {
     font-size: 13px;
+  }
+
+  .dialog-next-btn {
+    padding: 10px 18px;
+    font-size: 13px;
+    min-height: 40px;
+    min-width: 70px;
+  }
+
+  .portrait-placeholder {
+    width: 40px;
+    height: 40px;
+    font-size: 14px;
+  }
+
+  .vs-text {
+    font-size: 18px;
+    margin-top: 10px;
+  }
+
+  .fight-btn {
+    padding: 10px 24px;
+    font-size: 16px;
+    letter-spacing: 2px;
+  }
+
+  .story-card {
+    width: 90vw;
+    max-width: 280px;
+    padding: 14px;
+  }
+
+  .story-card h3 {
+    font-size: 18px;
+  }
+
+  .story-campaigns {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* Make round result buttons bigger on mobile */
+  #roundResult .mode-btn {
+    padding: 12px 20px;
+    font-size: 14px;
+    min-height: 44px;
+  }
+
+  .char-info {
+    font-size: 10px;
+  }
+
+  .selected-char {
+    max-width: 140px;
+  }
+
+  #selectedDisplay {
+    gap: 6px;
+  }
+
+  #selectLabel {
+    font-size: 15px;
+  }
+}
+
+/* Extra small screens (iPhone SE, etc.) */
+@media (max-width: 380px) {
+  .char-cell {
+    width: 48px;
+    height: 40px;
+    font-size: 8px;
+    gap: 1px;
+  }
+
+  .char-cell-portrait {
+    width: 20px;
+    height: 20px;
+  }
+
+  .mode-btn {
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+
+  .title {
+    font-size: 18px;
+    letter-spacing: 1px;
+  }
+
+  .health-bar-container {
+    width: 28vw;
+    height: 12px;
+  }
+
+  .energy-bar-container {
+    width: 28vw;
+    height: 5px;
+  }
+}
+
+/* Landscape mobile — ensure game fills the screen */
+@media (max-height: 500px) and (orientation: landscape) {
+  body {
+    align-items: flex-start;
+  }
+
+  #charSelectScreen {
+    max-height: 100vh;
+    max-height: 100dvh;
+    padding: 6px 10px;
+    gap: 4px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .subtitle {
+    font-size: 11px;
+    margin-bottom: 2px;
+  }
+
+  #modeSelect {
+    gap: 4px;
+  }
+
+  .mode-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .char-cell {
+    width: 55px;
+    height: 44px;
+    font-size: 9px;
+  }
+
+  .portrait-placeholder {
+    width: 36px;
+    height: 36px;
+    font-size: 12px;
   }
 }
 
@@ -1057,4 +1233,148 @@ body.is-mobile #btnPvP {
 /* Mobile-only: hide keyboard controls info */
 body.is-mobile .controls-info {
   display: none;
+}
+
+/* Mobile game screen — fill viewport */
+body.is-mobile #gameScreen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* Mobile battle buttons — scale with viewport */
+body.is-mobile .mobile-btn {
+  width: clamp(40px, 10vw, 56px);
+  height: clamp(40px, 10vw, 56px);
+  font-size: clamp(13px, 3.5vw, 18px);
+}
+
+body.is-mobile .mobile-btn-block,
+body.is-mobile .mobile-btn-charge {
+  width: clamp(34px, 8vw, 48px);
+  height: clamp(34px, 8vw, 48px);
+  font-size: clamp(11px, 3vw, 15px);
+}
+
+body.is-mobile .joystick-area {
+  width: clamp(90px, 22vw, 140px);
+  height: clamp(90px, 22vw, 140px);
+  bottom: clamp(8px, 2vh, 20px);
+  left: clamp(8px, 2vw, 20px);
+}
+
+body.is-mobile .joystick-base {
+  width: clamp(80px, 20vw, 130px);
+  height: clamp(80px, 20vw, 130px);
+}
+
+body.is-mobile .joystick-thumb {
+  width: clamp(32px, 8vw, 50px);
+  height: clamp(32px, 8vw, 50px);
+}
+
+body.is-mobile .mobile-buttons-right {
+  bottom: clamp(8px, 2vh, 20px);
+  right: clamp(8px, 2vw, 20px);
+}
+
+body.is-mobile .mobile-buttons-left {
+  top: clamp(60px, 14vh, 80px);
+  left: clamp(4px, 1vw, 10px);
+}
+
+body.is-mobile .mobile-btn-jump {
+  margin-bottom: clamp(8px, 2vh, 20px);
+}
+
+/* Story dialog on mobile — full width, above controls */
+body.is-mobile .dialog-overlay {
+  width: 100vw;
+  left: 0;
+  transform: none;
+  bottom: 0;
+  max-width: 100vw;
+}
+
+body.is-mobile .dialog-box {
+  padding: 12px 10px;
+  gap: 8px;
+  min-height: 60px;
+}
+
+body.is-mobile .dialog-next-btn {
+  padding: 12px 20px;
+  font-size: 14px;
+  min-height: 44px;
+  min-width: 80px;
+  align-self: center;
+}
+
+body.is-mobile .dialog-text {
+  font-size: clamp(12px, 3.5vw, 15px);
+}
+
+body.is-mobile .dialog-speaker {
+  font-size: clamp(13px, 3.5vw, 16px);
+}
+
+/* Mobile HUD scaling */
+body.is-mobile #hud {
+  padding: 4px 6px;
+  height: auto;
+}
+
+body.is-mobile .portrait-small {
+  width: clamp(24px, 6vw, 44px);
+  height: clamp(24px, 6vw, 44px);
+  font-size: clamp(8px, 2vw, 11px);
+}
+
+body.is-mobile .health-bar-container {
+  width: clamp(60px, 28vw, 360px);
+  height: clamp(12px, 3vh, 22px);
+}
+
+body.is-mobile .energy-bar-container {
+  width: clamp(60px, 28vw, 360px);
+  height: clamp(5px, 1.5vh, 10px);
+}
+
+body.is-mobile #timerDisplay {
+  font-size: clamp(16px, 4vw, 32px);
+  min-width: clamp(30px, 6vw, 60px);
+}
+
+body.is-mobile .player-name {
+  font-size: clamp(8px, 2vw, 12px);
+}
+
+body.is-mobile .energy-label {
+  font-size: clamp(6px, 1.5vw, 8px);
+}
+
+/* Ensure round result is tappable on mobile */
+body.is-mobile #roundResult {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+}
+
+body.is-mobile #roundResult .mode-btn {
+  min-height: 44px;
+  min-width: 120px;
+  font-size: clamp(13px, 3.5vw, 16px);
+}
+
+/* Move list overlay mobile */
+body.is-mobile .movelist-overlay {
+  padding: 10px;
+}
+
+body.is-mobile .movelist-header h2 {
+  font-size: clamp(16px, 4vw, 24px);
 }
