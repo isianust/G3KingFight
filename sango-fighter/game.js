@@ -574,9 +574,10 @@
         });
       }
       if (c.ultimate) {
+        var ultCmd = entry.label === 'P1' ? '滿氣+U+I' : '滿氣+Enter+/';
         html += '<div class="bml-move bml-ultimate"><span class="bml-move-name" style="color:' +
           (c.ultimate.color || '#ffd700') + '">★ ' + c.ultimate.name +
-          '</span><span class="bml-move-cmd">滿氣+U+I</span></div>';
+          '</span><span class="bml-move-cmd">' + ultCmd + '</span></div>';
       }
       sec.innerHTML = html;
       battleMoveListContent.appendChild(sec);
@@ -1266,9 +1267,11 @@
       case 'd': player1.keys.right = true; break;
       case 'w': player1.keys.jump = true; break;
       case 'u':
+        e.preventDefault();
         player1.keys.attack1 = true;
         break;
       case 'i':
+        e.preventDefault();
         player1.keys.attack2 = true;
         break;
       case 's':
