@@ -18,6 +18,7 @@
       <button id="btnStory" class="mode-btn story-mode-btn">故事模式 (Story)</button>
       <button id="btnMoveList" class="mode-btn movelist-btn">招式表</button>
       <button id="btnStageList" class="mode-btn stagelist-btn">關卡列表</button>
+      <button id="btnImageList" class="mode-btn imagelist-btn">🎨 圖片清單</button>
     </div>
 
     <!-- Difficulty Selection -->
@@ -95,6 +96,10 @@
             <div class="energy-bar" id="p1EnergyBar"></div>
             <span class="energy-label">氣</span>
           </div>
+          <div class="knockdown-bar-container">
+            <div class="knockdown-bar" id="p1KnockdownBar"></div>
+            <span class="knockdown-label">倒</span>
+          </div>
         </div>
       </div>
       <div id="timerDisplay">99</div>
@@ -107,6 +112,10 @@
           <div class="energy-bar-container right-bar">
             <div class="energy-bar" id="p2EnergyBar"></div>
             <span class="energy-label">氣</span>
+          </div>
+          <div class="knockdown-bar-container right-bar">
+            <div class="knockdown-bar" id="p2KnockdownBar"></div>
+            <span class="knockdown-label">倒</span>
           </div>
         </div>
         <div class="portrait-small" id="p2HudPortrait"></div>
@@ -144,6 +153,15 @@
     </div>
   </div>
 
+  <!-- Story Map Overlay -->
+  <div id="storyMapOverlay" class="screen hidden">
+    <div class="story-map-container">
+      <h2 id="storyMapTitle" class="story-map-title"></h2>
+      <div id="storyMapContent" class="story-map-content"></div>
+      <button id="btnStoryMapContinue" class="mode-btn story-map-continue">繼續 →</button>
+    </div>
+  </div>
+
   <!-- Dialog Overlay (Story Mode) -->
   <div id="dialogOverlay" class="dialog-overlay hidden">
     <div class="dialog-box">
@@ -172,6 +190,15 @@
       <button id="btnCloseMoveList" class="mode-btn">✕ 關閉</button>
     </div>
     <div id="moveListContent" class="movelist-content"></div>
+  </div>
+
+  <!-- Image List Overlay -->
+  <div id="imageListOverlay" class="movelist-overlay hidden">
+    <div class="movelist-header">
+      <h2>🎨 圖片清單 — Image Checklist</h2>
+      <button id="btnCloseImageList" class="mode-btn">✕ 關閉</button>
+    </div>
+    <div id="imageListContent" class="imagelist-content"></div>
   </div>
 
   <!-- Version Display -->

@@ -14,6 +14,13 @@ const ENERGY_GAIN_CHARGE = 1.2;  // energy per frame while charging
 const BLOCK_DAMAGE_REDUCTION = 0.7; // 70% damage reduced when blocking
 const BLOCK_KNOCKBACK_REDUCTION = 0.5;
 
+/* ---------- Knockdown Bar Constants ---------- */
+const KNOCKDOWN_BAR_LIGHT = 20;    // knockdown bar damage from light attack
+const KNOCKDOWN_BAR_HEAVY = 50;    // knockdown bar damage from heavy attack
+const KNOCKDOWN_BAR_SPECIAL = 100; // knockdown bar damage from special move (instant knockdown)
+const HITSTUN_LIGHT = 8;           // hitstun frames from light attack
+const HITSTUN_HEAVY = 12;          // hitstun frames from heavy attack
+
 /* ---------- Animation States ---------- */
 const ANIM = {
   IDLE: 'idle',
@@ -224,7 +231,12 @@ class Fighter extends Sprite {
     this.isInvincible = false;
     this.invincibleTimer = 0;
     this.invincibleDuration = 45; // frames of invincibility after getting up
-    this.knockdownThreshold = 25; // damage threshold to trigger knockdown
+
+    // Knockdown Bar (倒地條): depletes on hit, recovers over time
+    // When bar reaches 0, character is knocked down
+    this.knockdownBar = 100;      // current bar value
+    this.knockdownBarMax = 100;   // max bar value
+    this.knockdownBarRecovery = 2; // recovery per frame when not in hitstun
 
     // Energy / Chi system (氣)
     this.energy = 0;
@@ -461,8 +473,9 @@ class Fighter extends Sprite {
     }
   }
 
-  /* ---- Take damage (with blocking and knockdown) ---- */
-  takeHit(damage, knockback) {
+  /* ---- Take damage (with blocking and knockdown bar) ---- */
+  // attackType: 'light', 'heavy', or 'special'
+  takeHit(damage, knockback, attackType) {
     if (this.dead) return;
 
     // Invincible after get-up — no damage
@@ -500,11 +513,29 @@ class Fighter extends Sprite {
       return;
     }
 
-    // All hits cause knockdown
-    this._startKnockdown(knockback);
-    this.isAttacking = false;
-    this.isUsingSpecial = false;
-    this.attackDuration = 0;
+    // Knockdown bar system: deplete based on attack type
+    var barDamage = KNOCKDOWN_BAR_LIGHT;
+    if (attackType === 'heavy') barDamage = KNOCKDOWN_BAR_HEAVY;
+    else if (attackType === 'special') barDamage = KNOCKDOWN_BAR_SPECIAL;
+
+    this.knockdownBar -= barDamage;
+
+    if (this.knockdownBar <= 0) {
+      // Bar depleted — knockdown!
+      this.knockdownBar = 0;
+      this._startKnockdown(knockback);
+      this.isAttacking = false;
+      this.isUsingSpecial = false;
+      this.attackDuration = 0;
+    } else {
+      // Bar not depleted — hitstun only (no knockdown)
+      this.hitstun = attackType === 'heavy' ? HITSTUN_HEAVY : HITSTUN_LIGHT;
+      this.knockbackVel = knockback * 0.5;
+      this.currentAnim = ANIM.TAKE_HIT;
+      this.isAttacking = false;
+      this.isUsingSpecial = false;
+      this.attackDuration = 0;
+    }
   }
 
   /* ---- Start knockdown (KOF/SF style) ---- */
@@ -522,6 +553,7 @@ class Fighter extends Sprite {
     this.hitstun = 0;
     this.framesCurrent = 0;
     this.framesElapsed = 0;
+    this.knockdownBar = this.knockdownBarMax; // reset bar on knockdown
   }
 
   /* ---- Start get-up from knockdown ---- */
@@ -597,6 +629,11 @@ class Fighter extends Sprite {
       if (this.invincibleTimer <= 0) {
         this.isInvincible = false;
       }
+    }
+
+    // --- Knockdown bar recovery ---
+    if (this.hitstun <= 0 && this.knockdownBar < this.knockdownBarMax) {
+      this.knockdownBar = Math.min(this.knockdownBarMax, this.knockdownBar + this.knockdownBarRecovery);
     }
 
     // --- Input buffer timer ---
