@@ -915,7 +915,7 @@
         size: '512 × 512 px (每幀)',
         format: 'PNG (透明背景)',
         desc: '精靈圖表: idle(4幀), run(6幀), attack1(4幀), attack2(4幀), special(6幀), knockdown(3幀), getup(3幀), death(4幀), jump(2幀), block(1幀)',
-        current: '🟡 HTML 色塊',
+        current: '🟢 Canvas 精靈圖 (自動生成)',
         color: c.color
       });
       charSection.items.push({
@@ -945,7 +945,7 @@
         size: '256 × 256 px (每幀)',
         format: 'PNG (透明背景)',
         desc: '精靈圖表: idle(4幀), run(4幀), attack(3幀), knockdown(2幀), death(3幀)',
-        current: '🟡 HTML 色塊 (較小)',
+        current: '🟢 Canvas 精靈圖 (自動生成)',
         color: s.color
       });
     });
