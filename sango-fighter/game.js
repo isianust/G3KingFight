@@ -29,6 +29,8 @@
   var p2HealthBar = document.getElementById('p2HealthBar');
   var p1EnergyBar = document.getElementById('p1EnergyBar');
   var p2EnergyBar = document.getElementById('p2EnergyBar');
+  var p1KnockdownBar = document.getElementById('p1KnockdownBar');
+  var p2KnockdownBar = document.getElementById('p2KnockdownBar');
   var p1HudName = document.getElementById('p1HudName');
   var p2HudName = document.getElementById('p2HudName');
   var p1HudPortrait = document.getElementById('p1HudPortrait');
@@ -984,8 +986,17 @@
       }
     }
 
+    // Update knockdown bars
+    if (p1KnockdownBar) p1KnockdownBar.style.width = (player1.knockdownBar / player1.knockdownBarMax * 100) + '%';
+    if (p2KnockdownBar) p2KnockdownBar.style.width = (player2.knockdownBar / player2.knockdownBarMax * 100) + '%';
+
+    // Wait for death animation to complete before ending round
     if (player1.dead || player2.dead) {
-      endRound();
+      var deadPlayer = player1.dead ? player1 : player2;
+      if (deadPlayer.deathAnimDone) {
+        endRound();
+      }
+      // else: keep running the loop until animation is done
     }
   }
 
@@ -1861,7 +1872,7 @@
           var knockDir = proj.vx > 0 ? 1 : -1;
           var adjustedDamage = Math.round(proj.damage * (target._defMultiplier || 1));
           if (adjustedDamage < 1) adjustedDamage = 1;
-          target.takeHit(adjustedDamage, knockDir * 8);
+          target.takeHit(adjustedDamage, knockDir * 8, 'special');
           spawnHitEffect(target.position.x + target.width / 2, target.position.y + target.height * 0.3, true);
 
           // Attacker gains energy
@@ -1913,15 +1924,17 @@
     if (rectanglesOverlap(atkRect, defRect)) {
       attacker.hasHitThisSwing = true;
 
-      var baseDamage, knockForce;
+      var baseDamage, knockForce, attackType;
       if (attacker.isUsingSpecial && attacker.currentSpecialMove) {
         var move = attacker.currentSpecialMove;
         var moveHits = move.hits || 1;
         baseDamage = move.damage / moveHits;
         knockForce = attacker.isUsingUltimate ? 15 : 8;
+        attackType = 'special';
       } else {
         baseDamage = attacker.attackType === 1 ? LIGHT_ATTACK_DAMAGE : HEAVY_ATTACK_DAMAGE;
         knockForce = attacker.attackType === 1 ? LIGHT_ATTACK_KNOCKBACK : HEAVY_ATTACK_KNOCKBACK;
+        attackType = attacker.attackType === 1 ? 'light' : 'heavy';
       }
 
       var damage = baseDamage * (attacker._atkMultiplier || 1) * (defender._defMultiplier || 1) * attacker.buffMultiplier;
@@ -1929,7 +1942,7 @@
       if (damage < 1) damage = 1;
 
       var knockDir = attacker.facingRight ? 1 : -1;
-      defender.takeHit(damage, knockDir * knockForce);
+      defender.takeHit(damage, knockDir * knockForce, attackType);
 
       // Attacker gains energy
       attacker.energy += ENERGY_GAIN_HIT;

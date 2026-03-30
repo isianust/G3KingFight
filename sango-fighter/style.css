@@ -491,6 +491,39 @@ body.is-mobile {
   text-shadow: 1px 1px 1px #000;
 }
 
+/* Knockdown Bar (倒地條) */
+.knockdown-bar-container {
+  position: relative;
+  width: 360px;
+  height: 6px;
+  background: #222;
+  border: 1px solid #555;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.knockdown-bar {
+  height: 100%;
+  width: 100%;
+  transition: width 0.1s ease-out;
+  border-radius: 1px;
+  background: linear-gradient(90deg, #ff8800, #ffcc00);
+}
+
+.player-hud.right .knockdown-bar {
+  float: right;
+  background: linear-gradient(270deg, #ff8800, #ffcc00);
+}
+
+.knockdown-label {
+  position: absolute;
+  right: 4px;
+  top: -2px;
+  font-size: 7px;
+  color: #ffcc88;
+  text-shadow: 1px 1px 1px #000;
+}
+
 #timerDisplay {
   font-size: 32px;
   font-weight: bold;
