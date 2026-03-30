@@ -959,6 +959,21 @@ class Fighter extends Sprite {
       ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
     }
 
+    // Animated spinning stars overlay for knockdown (smooth via Date.now)
+    if (this.isKnockedDown) {
+      var starCount = 3;
+      var kcx = this.position.x + this.width / 2;
+      var kcy = this.position.y + this.height * 0.2;
+      for (var si = 0; si < starCount; si++) {
+        var starAngle = (Date.now() * 0.005) + (si * Math.PI * 2 / starCount);
+        var starX = kcx + Math.cos(starAngle) * 20;
+        var starY = kcy + Math.sin(starAngle) * 10;
+        ctx.fillStyle = '#ffff00';
+        ctx.font = '12px sans-serif';
+        ctx.fillText('★', starX - 6, starY);
+      }
+    }
+
     // --- Name label ---
     if (this.charData) {
       ctx.font = isSoldierUnit ? 'bold 10px sans-serif' : 'bold 13px sans-serif';
@@ -991,11 +1006,11 @@ class Fighter extends Sprite {
       ctx.fill();
 
       for (var i = 0; i < 3; i++) {
-        var cpx = this.position.x + Math.random() * this.width;
-        var cpy = this.position.y + this.height - Math.random() * this.height * 1.5;
+        var particleX = this.position.x + Math.random() * this.width;
+        var particleY = this.position.y + this.height - Math.random() * this.height * 1.5;
         ctx.fillStyle = 'rgba(100, 220, 255, ' + (Math.random() * 0.5 + 0.3) + ')';
         ctx.beginPath();
-        ctx.arc(cpx, cpy, Math.random() * 3 + 1, 0, Math.PI * 2);
+        ctx.arc(particleX, particleY, Math.random() * 3 + 1, 0, Math.PI * 2);
         ctx.fill();
       }
     }

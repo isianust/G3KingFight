@@ -328,16 +328,8 @@ function _drawKnockdownFrame(ctx, ox, oy, w, h, bodyColor, isSoldier, frameIdx, 
   ctx.lineTo(exOff - 3, 1);
   ctx.stroke();
 
-  // Spinning stars (different positions per frame)
-  var starCount = 3;
-  for (var si = 0; si < starCount; si++) {
-    var starPhase = (frameIdx / totalFrames) * Math.PI * 2 + (si * Math.PI * 2 / starCount);
-    var starX = Math.cos(starPhase) * 20;
-    var starY = Math.sin(starPhase) * 10 - w;
-    ctx.fillStyle = '#ffff00';
-    ctx.font = '12px sans-serif';
-    ctx.fillText('★', starX - 6, starY);
-  }
+  // Stars are drawn as a runtime overlay in _drawPlaceholder
+  // so they can animate smoothly with Date.now()
 
   ctx.restore();
 }
