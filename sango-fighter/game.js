@@ -44,6 +44,10 @@
 
   // Story mode elements
   var storySelectScreen = document.getElementById('storySelectScreen');
+  var storyMapOverlay = document.getElementById('storyMapOverlay');
+  var storyMapTitle = document.getElementById('storyMapTitle');
+  var storyMapContent = document.getElementById('storyMapContent');
+  var btnStoryMapContinue = document.getElementById('btnStoryMapContinue');
   var dialogOverlay = document.getElementById('dialogOverlay');
   var dialogPortrait = document.getElementById('dialogPortrait');
   var dialogSpeaker = document.getElementById('dialogSpeaker');
@@ -293,6 +297,7 @@
     stopGame();
     roundResult.classList.add('hidden');
     gameScreen.classList.add('hidden');
+    storyMapOverlay.classList.add('hidden');
     charSelectScreen.classList.remove('hidden');
     modeSelect.classList.remove('hidden');
     charSelectPanel.classList.add('hidden');
@@ -376,8 +381,8 @@
     var chapter = campaign.chapters[storyChapterIndex];
     storyBattleIndex = 0;
 
-    // Show chapter title
-    showChapterTitle(chapter, function () {
+    // Show story map with chapter progression
+    showStoryMap(campaign, storyChapterIndex, function () {
       // Show chapter dialogsBefore
       if (chapter.dialogsBefore && chapter.dialogsBefore.length > 0) {
         storyPhase = 'dialog_before';
@@ -388,6 +393,62 @@
         startStoryBattle();
       }
     });
+  }
+
+  function showStoryMap(campaign, currentChapterIdx, callback) {
+    // Hide other screens
+    gameScreen.classList.add('hidden');
+    charSelectScreen.classList.add('hidden');
+    storySelectScreen.classList.add('hidden');
+    storyMapOverlay.classList.remove('hidden');
+
+    // Set title
+    storyMapTitle.textContent = campaign.title + ' — ' + campaign.titleEn;
+
+    // Build map nodes
+    storyMapContent.innerHTML = '';
+    var chapters = campaign.chapters;
+
+    for (var i = 0; i < chapters.length; i++) {
+      // Add connector between nodes (except before first)
+      if (i > 0) {
+        var connector = document.createElement('div');
+        connector.className = 'story-map-connector' + (i <= currentChapterIdx ? ' completed' : '');
+        storyMapContent.appendChild(connector);
+      }
+
+      var node = document.createElement('div');
+      var state = i < currentChapterIdx ? 'completed' : (i === currentChapterIdx ? 'current' : 'locked');
+      node.className = 'story-map-node ' + state;
+
+      var circle = document.createElement('div');
+      circle.className = 'story-map-node-circle';
+      if (state === 'completed') {
+        circle.textContent = '✓';
+      } else if (state === 'current') {
+        circle.textContent = String(i + 1);
+      } else {
+        circle.textContent = '🔒';
+      }
+      node.appendChild(circle);
+
+      var label = document.createElement('div');
+      label.className = 'story-map-node-label';
+      label.textContent = chapters[i].title;
+      node.appendChild(label);
+
+      storyMapContent.appendChild(node);
+    }
+
+    // Continue button
+    var continueHandler = function (e) {
+      e.preventDefault();
+      btnStoryMapContinue.removeEventListener('click', continueHandler);
+      storyMapOverlay.classList.add('hidden');
+      // Show chapter title briefly on canvas
+      showChapterTitle(chapters[currentChapterIdx], callback);
+    };
+    btnStoryMapContinue.addEventListener('click', continueHandler);
   }
 
   function showChapterTitle(chapter, callback) {
@@ -684,6 +745,11 @@
     if (!stageListContent || !stageListOverlay) return;
     stageListContent.innerHTML = '';
 
+    // --- Section 1: Battle Stages (for PvP / vs CPU) ---
+    var stageSection = document.createElement('div');
+    stageSection.className = 'stagelist-section';
+    stageSection.innerHTML = '<h3 class="stagelist-section-title">🗺️ 對戰場景 — Battle Stages</h3>';
+
     // Stage color themes for preview
     var stageColors = [
       ['#c44e2d', '#f4c462'], // Battlefield at Dusk
@@ -692,6 +758,15 @@
       ['#2a5a2a', '#6ab06a'], // Bamboo Forest
       ['#3a4a6a', '#e8c888'], // Ancient Bridge
       ['#1e90ff', '#33aa33']  // Blue Sky Bliss
+    ];
+
+    var stageDescriptions = [
+      '夕陽西下的古戰場，紅霞映照刀劍之光。',
+      '月光下的皇宮庭院，燈火通明的權力中心。',
+      '熊熊烈火中的赤壁，江面上戰火紛飛。',
+      '幽靜竹林中的對決，清風竹影中暗藏殺機。',
+      '破曉時分的古橋，晨霧瀰漫中一決勝負。',
+      '藍天白雲下的開闊地，天高雲淡豪氣萬千。'
     ];
 
     var randomCard = document.createElement('div');
@@ -704,7 +779,7 @@
       selectedStage = -1;
       showStageList();
     });
-    stageListContent.appendChild(randomCard);
+    stageSection.appendChild(randomCard);
 
     for (var i = 0; i < STAGE_NAMES.length; i++) {
       (function (idx) {
@@ -715,16 +790,316 @@
         card.innerHTML =
           '<div class="stage-preview" style="background:linear-gradient(135deg, ' + colors[0] + ', ' + colors[1] + ');"></div>' +
           '<div class="stage-name">' + stage.name + '</div>' +
-          '<div class="stage-name-en">' + stage.nameEn + '</div>';
+          '<div class="stage-name-en">' + stage.nameEn + '</div>' +
+          '<div class="stage-desc">' + (stageDescriptions[idx] || '') + '</div>';
         card.addEventListener('click', function () {
           selectedStage = idx;
           showStageList();
         });
-        stageListContent.appendChild(card);
+        stageSection.appendChild(card);
       })(i);
     }
+    stageListContent.appendChild(stageSection);
+
+    // --- Section 2: Story Mode Campaigns & Chapters ---
+    var storySection = document.createElement('div');
+    storySection.className = 'stagelist-section';
+    storySection.innerHTML = '<h3 class="stagelist-section-title">📖 故事模式關卡 — Story Campaign Stages</h3>';
+
+    var factions = Object.keys(STORY_CAMPAIGNS);
+    for (var fi = 0; fi < factions.length; fi++) {
+      var factionName = factions[fi];
+      var campaign = STORY_CAMPAIGNS[factionName];
+
+      var campaignDiv = document.createElement('div');
+      campaignDiv.className = 'stagelist-campaign';
+
+      var campaignHeader = document.createElement('div');
+      campaignHeader.className = 'stagelist-campaign-header';
+      campaignHeader.innerHTML =
+        '<span class="stagelist-campaign-name">' + campaign.title + '</span>' +
+        '<span class="stagelist-campaign-en">' + campaign.titleEn + '</span>' +
+        '<span class="stagelist-campaign-desc">' + campaign.description + '</span>' +
+        '<span class="stagelist-campaign-meta">主角: ' +
+        (CHARACTER_ROSTER.find(function (c) { return c.id === campaign.protagonist; }) || {}).name +
+        ' | 共 ' + campaign.chapters.length + ' 章</span>';
+      campaignDiv.appendChild(campaignHeader);
+
+      for (var ci = 0; ci < campaign.chapters.length; ci++) {
+        var chapter = campaign.chapters[ci];
+        var chapterDiv = document.createElement('div');
+        chapterDiv.className = 'stagelist-chapter';
+
+        // Chapter title
+        var chapterTitle = document.createElement('div');
+        chapterTitle.className = 'stagelist-chapter-title';
+        chapterTitle.textContent = chapter.title + ' — ' + chapter.titleEn;
+        chapterDiv.appendChild(chapterTitle);
+
+        // Battle list
+        var battleList = document.createElement('div');
+        battleList.className = 'stagelist-battle-list';
+
+        for (var bi = 0; bi < chapter.battles.length; bi++) {
+          var battle = chapter.battles[bi];
+          var battleDiv = document.createElement('div');
+          battleDiv.className = 'stagelist-battle';
+
+          var opponentName = '';
+          var opponentColor = '#888';
+          if (battle.opponentType === 'soldier') {
+            var soldierType = SOLDIER_TYPES.find(function (s) { return s.id === battle.opponent; });
+            if (soldierType) {
+              opponentName = soldierType.name + ' (' + soldierType.weapon + ')';
+              opponentColor = soldierType.color;
+            }
+          } else {
+            var charData = CHARACTER_ROSTER.find(function (c) { return c.id === battle.opponent; });
+            if (charData) {
+              opponentName = charData.name + ' ' + charData.nameEn;
+              opponentColor = charData.color;
+            }
+          }
+
+          var typeLabel = battle.opponentType === 'soldier' ? '小兵' : '武將';
+          battleDiv.innerHTML =
+            '<span class="stagelist-battle-num">戰 ' + (bi + 1) + '</span>' +
+            '<span class="stagelist-battle-type" style="color:' + (battle.opponentType === 'soldier' ? '#888' : '#ffd700') + '">[' + typeLabel + ']</span>' +
+            '<span class="stagelist-battle-name" style="color:' + opponentColor + '">' + opponentName + '</span>';
+
+          battleList.appendChild(battleDiv);
+        }
+        chapterDiv.appendChild(battleList);
+
+        // Dialogue preview
+        if (chapter.dialogsBefore && chapter.dialogsBefore.length > 0) {
+          var dialogPreview = document.createElement('div');
+          dialogPreview.className = 'stagelist-dialog-preview';
+          dialogPreview.textContent = '💬 ' + chapter.dialogsBefore[0].speaker + ': 「' + chapter.dialogsBefore[0].text + '」';
+          chapterDiv.appendChild(dialogPreview);
+        }
+
+        campaignDiv.appendChild(chapterDiv);
+      }
+
+      storySection.appendChild(campaignDiv);
+    }
+    stageListContent.appendChild(storySection);
 
     stageListOverlay.classList.remove('hidden');
+  }
+
+  /* ========================================
+     Image Checklist
+     ======================================== */
+
+  var imageListOverlay = document.getElementById('imageListOverlay');
+  var imageListContent = document.getElementById('imageListContent');
+  var btnImageList = document.getElementById('btnImageList');
+  var btnCloseImageList = document.getElementById('btnCloseImageList');
+
+  if (btnImageList) {
+    btnImageList.addEventListener('click', function () {
+      showImageList();
+    });
+  }
+
+  if (btnCloseImageList) {
+    btnCloseImageList.addEventListener('click', function () {
+      imageListOverlay.classList.add('hidden');
+    });
+  }
+
+  function showImageList() {
+    if (!imageListContent || !imageListOverlay) return;
+    imageListContent.innerHTML = '';
+
+    var imageNeeds = [];
+
+    // 1. Character portraits & sprites
+    var charSection = { title: '🧑‍🎨 角色圖 — Character Art', items: [] };
+    CHARACTER_ROSTER.forEach(function (c) {
+      charSection.items.push({
+        name: c.name + ' (' + c.nameEn + ') — 戰鬥精靈圖',
+        size: '512 × 512 px (每幀)',
+        format: 'PNG (透明背景)',
+        desc: '精靈圖表: idle(4幀), run(6幀), attack1(4幀), attack2(4幀), special(6幀), knockdown(3幀), getup(3幀), death(4幀), jump(2幀), block(1幀)',
+        current: '🟡 HTML 色塊',
+        color: c.color
+      });
+      charSection.items.push({
+        name: c.name + ' — 選角頭像',
+        size: '128 × 128 px',
+        format: 'PNG/JPEG',
+        desc: '角色選擇畫面的大頭照, 半身像, 背景透明或單色',
+        current: '🟡 CSS 色塊 + 文字',
+        color: c.color
+      });
+      charSection.items.push({
+        name: c.name + ' — 對話立繪',
+        size: '256 × 512 px',
+        format: 'PNG (透明背景)',
+        desc: '故事模式對話時顯示的立繪, 半身或全身',
+        current: '🟡 CSS 圓形色塊 + 首字',
+        color: c.color
+      });
+    });
+    imageNeeds.push(charSection);
+
+    // 2. Soldier sprites
+    var soldierSection = { title: '⚔️ 小兵圖 — Soldier Art', items: [] };
+    SOLDIER_TYPES.forEach(function (s) {
+      soldierSection.items.push({
+        name: s.name + ' (' + s.weapon + ') — 戰鬥精靈圖',
+        size: '256 × 256 px (每幀)',
+        format: 'PNG (透明背景)',
+        desc: '精靈圖表: idle(4幀), run(4幀), attack(3幀), knockdown(2幀), death(3幀)',
+        current: '🟡 HTML 色塊 (較小)',
+        color: s.color
+      });
+    });
+    imageNeeds.push(soldierSection);
+
+    // 3. Backgrounds
+    var bgSection = { title: '🌄 背景圖 — Stage Backgrounds', items: [] };
+    STAGE_NAMES.forEach(function (stage, idx) {
+      bgSection.items.push({
+        name: stage.name + ' (' + stage.nameEn + ')',
+        size: '1024 × 576 px',
+        format: 'PNG/JPEG',
+        desc: '全畫面戰鬥背景, 三國風格場景',
+        current: '🟡 Canvas 漸層 + 幾何圖形',
+        color: null
+      });
+    });
+    imageNeeds.push(bgSection);
+
+    // 4. UI elements
+    var uiSection = { title: '🎮 介面圖 — UI Assets', items: [] };
+    uiSection.items.push({
+      name: '主選單背景',
+      size: '1024 × 576 px',
+      format: 'PNG/JPEG',
+      desc: '主畫面背景, 三國主題, 大氣磅礴',
+      current: '🟡 CSS 漸層背景',
+      color: null
+    });
+    uiSection.items.push({
+      name: '遊戲 Logo',
+      size: '512 × 200 px',
+      format: 'PNG (透明背景)',
+      desc: '「武將爭霸」遊戲標題 Logo',
+      current: '🟡 HTML 文字 + CSS 陰影',
+      color: null
+    });
+    uiSection.items.push({
+      name: '故事模式地圖背景',
+      size: '900 × 400 px',
+      format: 'PNG/JPEG',
+      desc: '故事關卡地圖底圖, 古地圖風格, 含路線',
+      current: '🟡 CSS 漸層 + HTML 節點',
+      color: null
+    });
+    uiSection.items.push({
+      name: 'HUD 血條框',
+      size: '400 × 30 px',
+      format: 'PNG (透明背景)',
+      desc: '血條外框裝飾, 古風邊框',
+      current: '🟡 CSS border + 漸層',
+      color: null
+    });
+    uiSection.items.push({
+      name: '勝利畫面',
+      size: '1024 × 576 px',
+      format: 'PNG/JPEG',
+      desc: '通關勝利畫面背景',
+      current: '🟡 Canvas 黑底 + 文字',
+      color: null
+    });
+    uiSection.items.push({
+      name: '對話框背景',
+      size: '800 × 150 px',
+      format: 'PNG (透明背景)',
+      desc: '故事模式對話框底圖, 古卷風格',
+      current: '🟡 CSS 半透明 + border',
+      color: null
+    });
+    imageNeeds.push(uiSection);
+
+    // 5. Effects
+    var fxSection = { title: '✨ 特效圖 — Effect Assets', items: [] };
+    fxSection.items.push({
+      name: '打擊特效',
+      size: '128 × 128 px (每幀)',
+      format: 'PNG (透明背景)',
+      desc: '攻擊命中的爆裂特效精靈圖, 4-6幀',
+      current: '🟡 Canvas 圓形粒子',
+      color: null
+    });
+    fxSection.items.push({
+      name: '氣彈投射物',
+      size: '64 × 64 px (每幀)',
+      format: 'PNG (透明背景)',
+      desc: '遠程攻擊的能量球精靈圖, 4幀循環',
+      current: '🟡 Canvas 發光圓',
+      color: null
+    });
+    fxSection.items.push({
+      name: '大招演出背景',
+      size: '1024 × 576 px',
+      format: 'PNG (透明背景)',
+      desc: '奧義發動時的全屏演出特效',
+      current: '🟡 Canvas 閃光 + 震動',
+      color: null
+    });
+    imageNeeds.push(fxSection);
+
+    // Render all sections
+    imageNeeds.forEach(function (section) {
+      var secDiv = document.createElement('div');
+      secDiv.className = 'imagelist-section';
+
+      var secTitle = document.createElement('h3');
+      secTitle.className = 'imagelist-section-title';
+      secTitle.textContent = section.title;
+      secDiv.appendChild(secTitle);
+
+      var table = document.createElement('table');
+      table.className = 'imagelist-table';
+      table.innerHTML =
+        '<thead><tr>' +
+        '<th>名稱</th><th>尺寸</th><th>格式</th><th>說明</th><th>現狀</th>' +
+        '</tr></thead>';
+      var tbody = document.createElement('tbody');
+
+      section.items.forEach(function (item) {
+        var tr = document.createElement('tr');
+        var colorSwatch = item.color
+          ? '<span class="imagelist-swatch" style="background:' + item.color + '"></span> '
+          : '';
+        tr.innerHTML =
+          '<td>' + colorSwatch + item.name + '</td>' +
+          '<td class="imagelist-size">' + item.size + '</td>' +
+          '<td class="imagelist-format">' + item.format + '</td>' +
+          '<td>' + item.desc + '</td>' +
+          '<td class="imagelist-status">' + item.current + '</td>';
+        tbody.appendChild(tr);
+      });
+
+      table.appendChild(tbody);
+      secDiv.appendChild(table);
+      imageListContent.appendChild(secDiv);
+    });
+
+    // Summary stats
+    var totalImages = 0;
+    imageNeeds.forEach(function (s) { totalImages += s.items.length; });
+    var summary = document.createElement('div');
+    summary.className = 'imagelist-summary';
+    summary.textContent = '總計需要 ' + totalImages + ' 張圖片素材。所有標示 🟡 的項目目前使用 HTML/CSS/Canvas 繪製, 需要替換為正式美術素材。';
+    imageListContent.appendChild(summary);
+
+    imageListOverlay.classList.remove('hidden');
   }
 
   /* ========================================
