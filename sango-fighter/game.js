@@ -131,12 +131,12 @@
 
   /* ---------- Stage names ---------- */
   var STAGE_NAMES = [
-    { name: '黃昏戰場', nameEn: 'Battlefield at Dusk' },
-    { name: '皇宮夜景', nameEn: 'Imperial Palace' },
-    { name: '赤壁烽火', nameEn: 'Red Cliff' },
-    { name: '竹林幽境', nameEn: 'Bamboo Forest' },
-    { name: '古橋破曉', nameEn: 'Ancient Bridge' },
-    { name: '藍天白雲', nameEn: 'Blue Sky Bliss' }
+    { name: '黃昏戰場', nameEn: 'Battlefield at Dusk', desc: '夕陽西下的古戰場，紅霞映照刀劍之光。' },
+    { name: '皇宮夜景', nameEn: 'Imperial Palace', desc: '月光下的皇宮庭院，燈火通明的權力中心。' },
+    { name: '赤壁烽火', nameEn: 'Red Cliff', desc: '熊熊烈火中的赤壁，江面上戰火紛飛。' },
+    { name: '竹林幽境', nameEn: 'Bamboo Forest', desc: '幽靜竹林中的對決，清風竹影中暗藏殺機。' },
+    { name: '古橋破曉', nameEn: 'Ancient Bridge', desc: '破曉時分的古橋，晨霧瀰漫中一決勝負。' },
+    { name: '藍天白雲', nameEn: 'Blue Sky Bliss', desc: '藍天白雲下的開闊地，天高雲淡豪氣萬千。' }
   ];
 
   /* ---------- Story mode state ---------- */
@@ -760,15 +760,6 @@
       ['#1e90ff', '#33aa33']  // Blue Sky Bliss
     ];
 
-    var stageDescriptions = [
-      '夕陽西下的古戰場，紅霞映照刀劍之光。',
-      '月光下的皇宮庭院，燈火通明的權力中心。',
-      '熊熊烈火中的赤壁，江面上戰火紛飛。',
-      '幽靜竹林中的對決，清風竹影中暗藏殺機。',
-      '破曉時分的古橋，晨霧瀰漫中一決勝負。',
-      '藍天白雲下的開闊地，天高雲淡豪氣萬千。'
-    ];
-
     var randomCard = document.createElement('div');
     randomCard.className = 'stage-card' + (selectedStage === -1 ? ' selected-stage' : '');
     randomCard.innerHTML =
@@ -791,7 +782,7 @@
           '<div class="stage-preview" style="background:linear-gradient(135deg, ' + colors[0] + ', ' + colors[1] + ');"></div>' +
           '<div class="stage-name">' + stage.name + '</div>' +
           '<div class="stage-name-en">' + stage.nameEn + '</div>' +
-          '<div class="stage-desc">' + (stageDescriptions[idx] || '') + '</div>';
+          '<div class="stage-desc">' + (stage.desc || '') + '</div>';
         card.addEventListener('click', function () {
           selectedStage = idx;
           showStageList();
@@ -1367,11 +1358,13 @@
 
     // Wait for death animation to complete before ending round
     if (player1.dead || player2.dead) {
-      var deadPlayer = player1.dead ? player1 : player2;
-      if (deadPlayer.deathAnimDone) {
+      // Check all dead players have finished their animation
+      var allDone = true;
+      if (player1.dead && !player1.deathAnimDone) allDone = false;
+      if (player2.dead && !player2.deathAnimDone) allDone = false;
+      if (allDone) {
         endRound();
       }
-      // else: keep running the loop until animation is done
     }
   }
 

@@ -14,6 +14,13 @@ const ENERGY_GAIN_CHARGE = 1.2;  // energy per frame while charging
 const BLOCK_DAMAGE_REDUCTION = 0.7; // 70% damage reduced when blocking
 const BLOCK_KNOCKBACK_REDUCTION = 0.5;
 
+/* ---------- Knockdown Bar Constants ---------- */
+const KNOCKDOWN_BAR_LIGHT = 20;    // knockdown bar damage from light attack
+const KNOCKDOWN_BAR_HEAVY = 50;    // knockdown bar damage from heavy attack
+const KNOCKDOWN_BAR_SPECIAL = 100; // knockdown bar damage from special move (instant knockdown)
+const HITSTUN_LIGHT = 8;           // hitstun frames from light attack
+const HITSTUN_HEAVY = 12;          // hitstun frames from heavy attack
+
 /* ---------- Animation States ---------- */
 const ANIM = {
   IDLE: 'idle',
@@ -507,9 +514,9 @@ class Fighter extends Sprite {
     }
 
     // Knockdown bar system: deplete based on attack type
-    var barDamage = 20; // default: light attack
-    if (attackType === 'heavy') barDamage = 50;
-    else if (attackType === 'special') barDamage = 100;
+    var barDamage = KNOCKDOWN_BAR_LIGHT;
+    if (attackType === 'heavy') barDamage = KNOCKDOWN_BAR_HEAVY;
+    else if (attackType === 'special') barDamage = KNOCKDOWN_BAR_SPECIAL;
 
     this.knockdownBar -= barDamage;
 
@@ -522,7 +529,7 @@ class Fighter extends Sprite {
       this.attackDuration = 0;
     } else {
       // Bar not depleted — hitstun only (no knockdown)
-      this.hitstun = attackType === 'heavy' ? 12 : 8;
+      this.hitstun = attackType === 'heavy' ? HITSTUN_HEAVY : HITSTUN_LIGHT;
       this.knockbackVel = knockback * 0.5;
       this.currentAnim = ANIM.TAKE_HIT;
       this.isAttacking = false;
