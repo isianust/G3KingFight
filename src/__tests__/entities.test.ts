@@ -2,13 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Sprite } from '../entities/Sprite';
 import { Fighter } from '../entities/Fighter';
 import { Projectile } from '../entities/Projectile';
-import {
-  HERO_MAX_HEALTH,
-  MAX_ENERGY,
-  ENERGY_GAIN_HURT,
-  ENERGY_GAIN_CHARGE,
-} from '../constants/gameConfig';
-import { ANIM, MOVE_TYPE, CMD } from '../constants/enums';
+import { HERO_MAX_HEALTH, MAX_ENERGY, ENERGY_GAIN_HURT } from '../constants/gameConfig';
+import { ANIM, CMD } from '../constants/enums';
 import type { CharacterData } from '../types';
 
 // Mock canvas context
@@ -157,11 +152,9 @@ describe('Sprite', () => {
 
 // ============ Fighter Tests ============
 describe('Fighter', () => {
-  let ctx: CanvasRenderingContext2D;
   let fighter: Fighter;
 
   beforeEach(() => {
-    ctx = createMockCtx();
     fighter = new Fighter({
       position: { x: 100, y: 300 },
       color: '#ff0000',

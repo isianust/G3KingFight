@@ -92,7 +92,12 @@ describe('CHARACTER_ROSTER', () => {
         expect(move.type).toBeTruthy();
         expect(move.command).toBeDefined();
         expect(Array.isArray(move.command)).toBe(true);
-        expect(move.damage).toBeGreaterThan(0);
+        // BUFF moves may have 0 damage (they provide stat boosts instead)
+        if (move.type === 'buff') {
+          expect(move.damage).toBeGreaterThanOrEqual(0);
+        } else {
+          expect(move.damage).toBeGreaterThan(0);
+        }
         expect(move.energyCost).toBeGreaterThanOrEqual(0);
         expect(move.description).toBeTruthy();
       }
