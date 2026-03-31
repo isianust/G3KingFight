@@ -768,7 +768,6 @@ export class Fighter extends Sprite {
     }
 
     const atkW = this.attackBox.width * specialRange;
-    const _atkH = this.attackBox.height * specialRange;
     const atkOffX = this.facingRight ? this.attackBox.offset.x : -(this.attackBox.offset.x + atkW);
     this.attackBox.position.x = this.position.x + (this.facingRight ? this.width : 0) + atkOffX;
     this.attackBox.position.y = this.position.y + this.attackBox.offset.y;

@@ -4,16 +4,10 @@ import { resolve } from 'path';
 export default defineConfig({
   root: '.',
   base: './',
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, './src'),
-    },
-  },
   build: {
     outDir: 'dist',
     sourcemap: true,
     target: 'es2020',
-    minify: 'terser',
     rollupOptions: {
       input: resolve(__dirname, 'index.html'),
     },
