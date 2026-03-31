@@ -101,15 +101,61 @@ export interface SpriteConfig {
   framesMax?: number;
   offset?: Vector2D;
   color?: string;
+  width?: number;
+  height?: number;
 }
 
 // ---- Fighter ----
 
+export interface AttackBoxConfig {
+  offset: Vector2D;
+  width: number;
+  height: number;
+}
+
+export interface FighterAttackBox extends AttackBoxConfig {
+  position: Vector2D;
+}
+
+export interface SpriteInputConfig {
+  imageSrc?: string;
+  framesMax?: number;
+}
+
+export interface LoadedSpriteEntry {
+  image: HTMLImageElement | null;
+  loaded: boolean;
+  framesMax: number;
+}
+
+export interface FighterKeys {
+  left: boolean;
+  right: boolean;
+  jump: boolean;
+  attack1: boolean;
+  attack2: boolean;
+  block: boolean;
+  charge: boolean;
+}
+
+export interface MotionTrailEntry {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  color: string;
+  alpha: number;
+  life: number;
+}
+
 export interface FighterConfig extends SpriteConfig {
   velocity?: Vector2D;
-  charData: CharacterData | SoldierType;
+  charData?: CharacterData | SoldierType | null;
   isSoldier?: boolean;
-  soldierType?: string;
+  soldierType?: SoldierType | null;
+  attackBox?: AttackBoxConfig;
+  facingRight?: boolean;
+  sprites?: Record<string, SpriteInputConfig>;
 }
 
 export interface AttackBox {
@@ -121,12 +167,16 @@ export interface AttackBox {
 // ---- Projectile ----
 
 export interface ProjectileConfig {
-  position: Vector2D;
+  x: number;
+  y: number;
   vx: number;
-  vy: number;
+  vy?: number;
   damage: number;
-  color: string;
+  color?: string;
   owner: unknown;
+  width?: number;
+  height?: number;
+  life?: number;
 }
 
 // ---- Story Mode ----
