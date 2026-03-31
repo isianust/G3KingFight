@@ -1,0 +1,54 @@
+{
+  "name": "sango-fighter",
+  "version": "11.0.0",
+  "description": "武將爭霸 Sango Fighter — A 2D web-based fighting game featuring Three Kingdoms heroes",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,css,html}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,js,jsx,css,html}\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/isianust/G3KingFight.git"
+  },
+  "keywords": [
+    "fighting-game",
+    "three-kingdoms",
+    "html5-canvas",
+    "typescript",
+    "2d-game",
+    "sango",
+    "browser-game"
+  ],
+  "author": "isianust",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/isianust/G3KingFight/issues"
+  },
+  "homepage": "https://github.com/isianust/G3KingFight#readme",
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.5.0",
+    "@vitest/coverage-v8": "^4.1.2",
+    "eslint": "^10.1.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.4.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.1",
+    "typescript": "^6.0.2",
+    "typescript-eslint": "^8.58.0",
+    "vite": "^8.0.3",
+    "vitest": "^4.1.2"
+  }
+}
