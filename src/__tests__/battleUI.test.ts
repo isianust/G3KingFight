@@ -20,7 +20,7 @@ function createMockCharData(overrides: Partial<CharacterData> = {}): CharacterDa
       {
         name: '龍膽槍',
         nameEn: 'Dragon Spear',
-        type: 'melee' as const,
+        type: 'rush' as const,
         command: ['D', 'DF', 'F'],
         damage: 25,
         energyCost: 20,

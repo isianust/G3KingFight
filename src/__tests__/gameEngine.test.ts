@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { GameEngine } from '../core/GameEngine';
 import { Fighter } from '../entities/Fighter';
-import { CHARACTER_ROSTER } from '../data/characters';
 import { DIFFICULTY_SETTINGS } from '../constants/gameConfig';
 import type { SelectableCharData } from '../ui/screens/CharacterSelect';
 
@@ -265,7 +264,6 @@ describe('GameEngine', () => {
       charSelect.p2Char = createMockCharData({ stats: p2Stats, id: 'test_char2', name: '張飛' });
 
       // Trigger the fight flow
-      const onFight = charSelect._onFight as unknown as () => void;
       (getPrivate<{ _onFight: (() => void) | null }>(eng, 'charSelect') as { _onFight: () => void })
         ._onFight!();
 
@@ -385,7 +383,6 @@ describe('GameEngine', () => {
     it('hard difficulty boosts CPU stats by 2', () => {
       const p2Stats = { atk: 5, def: 5, spd: 5 };
       const cpu = startPvCPU(engine, 'hard', p2Stats);
-      const diff = DIFFICULTY_SETTINGS.hard;
 
       expect(cpu.speed).toBeCloseTo(3.5 + 7 * 0.35, 5);
       expect(cpu._defMultiplier).toBeCloseTo(1 - 7 * 0.04, 5);
@@ -394,7 +391,6 @@ describe('GameEngine', () => {
     it('stat bonuses are clamped to 10', () => {
       const p2Stats = { atk: 9, def: 10, spd: 9 };
       const cpu = startPvCPU(engine, 'hard', p2Stats);
-      const diff = DIFFICULTY_SETTINGS.hard;
 
       // atk: min(10, 9+2) = 10, def: min(10, 10+2) = 10, spd: min(10, 9+2) = 10
       expect(cpu._defMultiplier).toBeCloseTo(1 - 10 * 0.04, 5);

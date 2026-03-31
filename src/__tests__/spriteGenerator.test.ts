@@ -86,13 +86,20 @@ function makeHeroData(): CharacterData {
     id: 'test-hero',
     name: 'Test Hero',
     nameEn: 'Test Hero',
-    faction: 'wei' as CharacterData['faction'],
+    faction: '蜀漢' as CharacterData['faction'],
     color: '#ff0000',
     weapon: 'sword',
-    stats: { hp: 100, attack: 10, defense: 5, speed: 5, special: 10 },
+    stats: { atk: 7, def: 6, spd: 5 },
     moves: [],
-    ultimate: { name: 'Ult', nameEn: 'Ult', damage: 50, type: 'damage' as const },
-  } as CharacterData;
+    ultimate: {
+      name: 'Ult',
+      nameEn: 'Ult',
+      damage: 50,
+      type: 'area' as const,
+      energyCost: 100,
+      description: 'Test ult',
+    },
+  };
 }
 
 function makeSoldierData(): SoldierType {
@@ -102,11 +109,11 @@ function makeSoldierData(): SoldierType {
     nameEn: 'Test Soldier',
     color: '#00ff00',
     weapon: 'spear',
-    stats: { hp: 50, attack: 5, defense: 3, speed: 3, special: 3 },
+    stats: { atk: 4, def: 3, spd: 3 },
     healthMultiplier: 1,
     attackRange: 40,
     description: 'A test soldier',
-  } as SoldierType;
+  };
 }
 
 /* ======================================================

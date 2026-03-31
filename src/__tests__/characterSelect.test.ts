@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { CharacterSelect } from '../ui/screens/CharacterSelect';
 import { CHARACTER_ROSTER } from '../data/characters';
 import { FACTION_DATA } from '../constants';

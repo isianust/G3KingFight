@@ -1,3 +1,4 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { StoryMode } from '../ui/screens/StoryMode';
 import { STORY_CAMPAIGNS } from '../data/stories';
 import { CHARACTER_ROSTER, SOLDIER_TYPES } from '../data/characters';
