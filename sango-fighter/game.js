@@ -103,6 +103,7 @@
 
       // attack state
       this.playerAttacking = false;
+      this._enemyAttacking = false;
       this.hitbox = null;
     },
 
@@ -271,8 +272,7 @@
         alpha: 0.3,
         duration: 80,
         yoyo: true,
-        repeat: 1,
-        onComplete: function () { /* noop */ }
+        repeat: 1
       });
 
       // Check KO
