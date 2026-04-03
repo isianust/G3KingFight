@@ -5,209 +5,103 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>武將爭霸 Sango Fighter</title>
   <link rel="stylesheet" href="style.css">
+  <!-- Phaser 3 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.87.0/dist/phaser.min.js"></script>
+  <style>
+    /* Start screen overlay — displayed on top of everything */
+    #start-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: linear-gradient(135deg, #0f0c29, #1a1533, #24243e);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+    }
+    #start-screen .title {
+      font-size: 52px;
+      color: #ffd700;
+      text-shadow: 2px 2px 6px rgba(0,0,0,0.8), 0 0 20px rgba(255,215,0,0.3);
+      letter-spacing: 8px;
+    }
+    #start-screen .subtitle {
+      font-size: 18px;
+      color: #c9a84c;
+      letter-spacing: 4px;
+    }
+    #start-btn {
+      margin-top: 20px;
+      padding: 16px 48px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #fff;
+      background: linear-gradient(135deg, #b22222, #8b0000);
+      border: 2px solid #ffd700;
+      border-radius: 8px;
+      cursor: pointer;
+      letter-spacing: 4px;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    #start-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255,215,0,0.5);
+    }
+    .controls-info {
+      display: flex;
+      gap: 40px;
+      margin-top: 16px;
+      font-size: 14px;
+      color: #aaa;
+    }
+    .controls-info h4 {
+      color: #ffd700;
+      margin-bottom: 6px;
+    }
+    .controls-info div {
+      margin: 2px 0;
+    }
+    /* Phaser canvas container */
+    #game-container {
+      display: none;
+      width: 1024px;
+      height: 576px;
+      margin: 0 auto;
+    }
+    /* Version badge */
+    #versionDisplay {
+      position: fixed;
+      bottom: 8px;
+      right: 12px;
+      font-size: 12px;
+      color: #666;
+      z-index: 200;
+    }
+  </style>
 </head>
 <body>
-  <!-- Character Select Screen -->
-  <div id="charSelectScreen" class="screen">
+  <!-- ===== Start Screen (HTML UI) ===== -->
+  <div id="start-screen">
     <h1 class="title">武將爭霸</h1>
-    <h2 class="subtitle">Sango Fighter — Web Edition</h2>
-
-    <div id="modeSelect">
-      <button id="btnPvP" class="mode-btn">雙人對戰 (PvP)</button>
-      <button id="btnPvCPU" class="mode-btn">單人對戰 (vs CPU)</button>
-      <button id="btnStory" class="mode-btn story-mode-btn">故事模式 (Story)</button>
-      <button id="btnMoveList" class="mode-btn movelist-btn">招式表</button>
-      <button id="btnStageList" class="mode-btn stagelist-btn">關卡列表</button>
-      <button id="btnImageList" class="mode-btn imagelist-btn">🎨 圖片清單</button>
-    </div>
-
-    <!-- Difficulty Selection -->
-    <div id="difficultySelect" class="difficulty-select">
-      <span class="difficulty-label">難度：</span>
-      <button class="diff-btn selected" data-diff="easy">初級</button>
-      <button class="diff-btn" data-diff="normal">中級</button>
-      <button class="diff-btn" data-diff="hard">高級</button>
-    </div>
-
-    <div id="charSelectPanel" class="hidden">
-      <div class="select-side">
-        <h3 id="selectLabel">P1 選擇角色</h3>
-        <div id="charGrid" class="char-grid"></div>
-      </div>
-      <div id="selectedDisplay">
-        <div class="selected-char">
-          <div class="portrait-placeholder" id="p1Portrait">P1</div>
-          <span id="p1Name">---</span>
-          <div id="p1CharInfo" class="char-info"></div>
-        </div>
-        <span class="vs-text">VS</span>
-        <div class="selected-char">
-          <div class="portrait-placeholder" id="p2Portrait">P2</div>
-          <span id="p2Name">---</span>
-          <div id="p2CharInfo" class="char-info"></div>
-        </div>
-      </div>
-      <button id="btnFight" class="fight-btn hidden">開戰！ FIGHT!</button>
-    </div>
-
-    <!-- Controls info -->
+    <h2 class="subtitle">Sango Fighter — Phaser 3 Edition</h2>
+    <button id="start-btn">開始遊戲 START</button>
     <div class="controls-info">
-      <div class="controls-column">
+      <div>
         <h4>P1 操作</h4>
-        <div>A/D — 移動</div>
+        <div>A / D — 左右移動</div>
         <div>W — 跳躍</div>
-        <div>U — 輕攻擊</div>
-        <div>I — 重攻擊</div>
-        <div>S — 防禦(配合←)</div>
-        <div>E — 蓄氣</div>
-        <div>指令+攻擊 — 招式</div>
-      </div>
-      <div class="controls-column">
-        <h4>P2 操作 (PvP)</h4>
-        <div>←/→ — 移動</div>
-        <div>↑ — 跳躍</div>
-        <div>Enter — 輕攻擊</div>
-        <div>/ — 重攻擊</div>
-        <div>↓ — 防禦(配合←)</div>
-        <div>. — 蓄氣</div>
+        <div>J — 攻擊</div>
       </div>
     </div>
   </div>
 
-  <!-- Story Select Screen -->
-  <div id="storySelectScreen" class="screen hidden">
-    <h1 class="title">故事模式</h1>
-    <h2 class="subtitle">選擇勢力開始征途</h2>
-    <div id="storyCampaigns" class="story-campaigns"></div>
-    <button class="mode-btn" onclick="document.getElementById('storySelectScreen').classList.add('hidden'); document.getElementById('charSelectScreen').classList.remove('hidden');">返回</button>
-  </div>
-
-  <!-- Game Screen -->
-  <div id="gameScreen" class="screen hidden">
-    <div id="hud">
-      <div class="player-hud left">
-        <div class="portrait-small" id="p1HudPortrait"></div>
-        <div class="bars-container">
-          <div class="health-bar-container">
-            <div class="health-bar" id="p1HealthBar"></div>
-            <span class="player-name" id="p1HudName">P1</span>
-          </div>
-          <div class="energy-bar-container">
-            <div class="energy-bar" id="p1EnergyBar"></div>
-            <span class="energy-label">氣</span>
-          </div>
-          <div class="knockdown-bar-container">
-            <div class="knockdown-bar" id="p1KnockdownBar"></div>
-            <span class="knockdown-label">倒</span>
-          </div>
-        </div>
-      </div>
-      <div id="timerDisplay">99</div>
-      <div class="player-hud right">
-        <div class="bars-container">
-          <div class="health-bar-container right-bar">
-            <div class="health-bar" id="p2HealthBar"></div>
-            <span class="player-name" id="p2HudName">P2</span>
-          </div>
-          <div class="energy-bar-container right-bar">
-            <div class="energy-bar" id="p2EnergyBar"></div>
-            <span class="energy-label">氣</span>
-          </div>
-          <div class="knockdown-bar-container right-bar">
-            <div class="knockdown-bar" id="p2KnockdownBar"></div>
-            <span class="knockdown-label">倒</span>
-          </div>
-        </div>
-        <div class="portrait-small" id="p2HudPortrait"></div>
-      </div>
-    </div>
-    <canvas id="gameCanvas" width="1024" height="576"></canvas>
-    <!-- Mobile Touch Controls -->
-    <div id="mobileControls" class="mobile-controls hidden">
-      <!-- Virtual Joystick (bottom-left) -->
-      <div id="joystickArea" class="joystick-area">
-        <div id="joystickBase" class="joystick-base">
-          <div id="joystickThumb" class="joystick-thumb"></div>
-        </div>
-      </div>
-      <!-- Attack Buttons (top-left and right side) -->
-      <div id="mobileButtonsLeft" class="mobile-buttons-left">
-        <button class="mobile-btn mobile-btn-block" data-action="block">防</button>
-        <button class="mobile-btn mobile-btn-charge" data-action="charge">氣</button>
-      </div>
-      <div id="mobileButtonsRight" class="mobile-buttons-right">
-        <button class="mobile-btn mobile-btn-light" data-action="attack1">輕</button>
-        <button class="mobile-btn mobile-btn-heavy" data-action="attack2">重</button>
-        <button class="mobile-btn mobile-btn-jump" data-action="jump">跳</button>
-      </div>
-    </div>
-    <!-- In-battle collapsible move list -->
-    <div id="battleMoveList" class="battle-movelist collapsed">
-      <button id="btnToggleBattleMoves" class="battle-movelist-toggle">招式表 ▶</button>
-      <div id="battleMoveListContent" class="battle-movelist-content"></div>
-    </div>
-    <div id="roundResult" class="hidden">
-      <span id="resultText"></span>
-      <button id="btnRestart" class="mode-btn">再來一局</button>
-      <button id="btnBackToMenu" class="mode-btn">回選單</button>
-    </div>
-  </div>
-
-  <!-- Story Map Overlay -->
-  <div id="storyMapOverlay" class="screen hidden">
-    <div class="story-map-container">
-      <h2 id="storyMapTitle" class="story-map-title"></h2>
-      <div id="storyMapContent" class="story-map-content"></div>
-      <button id="btnStoryMapContinue" class="mode-btn story-map-continue">繼續 →</button>
-    </div>
-  </div>
-
-  <!-- Dialog Overlay (Story Mode) -->
-  <div id="dialogOverlay" class="dialog-overlay hidden">
-    <div class="dialog-box">
-      <div class="dialog-portrait" id="dialogPortrait"></div>
-      <div class="dialog-content">
-        <div class="dialog-speaker" id="dialogSpeaker"></div>
-        <div class="dialog-text" id="dialogText"></div>
-      </div>
-      <button id="btnDialogNext" class="dialog-next-btn">▶ 下一句</button>
-    </div>
-  </div>
-
-  <!-- Stage List Overlay -->
-  <div id="stageListOverlay" class="movelist-overlay hidden">
-    <div class="movelist-header">
-      <h2>關卡列表 — Stage List</h2>
-      <button id="btnCloseStageList" class="mode-btn">✕ 關閉</button>
-    </div>
-    <div id="stageListContent" class="stagelist-content"></div>
-  </div>
-
-  <!-- Move List Overlay -->
-  <div id="moveListOverlay" class="movelist-overlay hidden">
-    <div class="movelist-header">
-      <h2>招式表 — Move List</h2>
-      <button id="btnCloseMoveList" class="mode-btn">✕ 關閉</button>
-    </div>
-    <div id="moveListContent" class="movelist-content"></div>
-  </div>
-
-  <!-- Image List Overlay -->
-  <div id="imageListOverlay" class="movelist-overlay hidden">
-    <div class="movelist-header">
-      <h2>🎨 圖片清單 — Image Checklist</h2>
-      <button id="btnCloseImageList" class="mode-btn">✕ 關閉</button>
-    </div>
-    <div id="imageListContent" class="imagelist-content"></div>
-  </div>
+  <!-- ===== Phaser Game Container ===== -->
+  <div id="game-container"></div>
 
   <!-- Version Display -->
-  <div id="versionDisplay" class="version-display">V11</div>
+  <div id="versionDisplay">V12-Phaser3</div>
 
-  <script src="characters.js"></script>
-  <script src="story.js"></script>
-  <script src="spriteGenerator.js"></script>
-  <script src="classes.js"></script>
   <script src="game.js"></script>
 </body>
 </html>
