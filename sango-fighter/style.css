@@ -53,7 +53,9 @@ body.is-mobile {
 .title {
   font-size: 42px;
   color: #ffd700;
-  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.3);
+  text-shadow:
+    2px 2px 6px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(255, 215, 0, 0.3);
   letter-spacing: 8px;
 }
 
@@ -80,7 +82,9 @@ body.is-mobile {
   cursor: pointer;
   font-family: inherit;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
-  transition: transform 0.1s, box-shadow 0.1s;
+  transition:
+    transform 0.1s,
+    box-shadow 0.1s;
 }
 
 .mode-btn:hover {
@@ -153,7 +157,9 @@ body.is-mobile {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
   font-size: 12px;
   gap: 2px;
 }
@@ -279,8 +285,13 @@ body.is-mobile {
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 /* Controls Info */
@@ -332,7 +343,9 @@ body.is-mobile {
   border: 2px solid #555;
   border-radius: 10px;
   text-align: center;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .story-card:hover {
@@ -378,7 +391,7 @@ body.is-mobile {
   justify-content: space-between;
   padding: 6px 12px;
   z-index: 10;
-  background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
   pointer-events: none;
 }
 
@@ -473,8 +486,13 @@ body.is-mobile {
 }
 
 @keyframes energyGlow {
-  0%, 100% { box-shadow: 0 0 5px rgba(255, 220, 0, 0.5); }
-  50% { box-shadow: 0 0 15px rgba(255, 220, 0, 0.9); }
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(255, 220, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(255, 220, 0, 0.9);
+  }
 }
 
 .player-hud.right .energy-bar {
@@ -528,7 +546,7 @@ body.is-mobile {
   font-size: 32px;
   font-weight: bold;
   color: #ffd700;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
   min-width: 60px;
   text-align: center;
   margin-top: 4px;
@@ -587,7 +605,9 @@ body.is-mobile {
 .story-map-title {
   font-size: 28px;
   color: #ffd700;
-  text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.3);
+  text-shadow:
+    2px 2px 6px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(255, 215, 0, 0.3);
   letter-spacing: 4px;
 }
 
@@ -648,8 +668,15 @@ body.is-mobile {
 }
 
 @keyframes mapNodePulse {
-  0%, 100% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.5); transform: scale(1); }
-  50% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.9); transform: scale(1.1); }
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.9);
+    transform: scale(1.1);
+  }
 }
 
 .story-map-node-label {
@@ -850,7 +877,9 @@ body.is-mobile {
   z-index: 15;
   max-width: 340px;
   max-height: 420px;
-  transition: max-width 0.25s ease, max-height 0.25s ease;
+  transition:
+    max-width 0.25s ease,
+    max-height 0.25s ease;
   pointer-events: auto;
 }
 
@@ -1014,14 +1043,15 @@ body.is-mobile {
   align-items: center;
   justify-content: center;
   color: #fff;
-  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
   -webkit-tap-highlight-color: transparent;
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
 }
 
-.mobile-btn:active, .mobile-btn.active {
+.mobile-btn:active,
+.mobile-btn.active {
   transform: scale(0.9);
   border-color: #ffd700;
 }
