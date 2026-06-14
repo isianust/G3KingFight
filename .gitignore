@@ -4,6 +4,7 @@ package-lock.json
 
 # Build output
 dist/
+dist-single/
 *.tsbuildinfo
 
 # IDE

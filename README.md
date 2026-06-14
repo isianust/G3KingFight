@@ -31,12 +31,22 @@
 
 ## 🚀 Quick Start
 
-### Prerequisites
+### 🎮 Instant Play — Download & Open (No Install Required!)
+
+1. Go to the [Actions → Build](../../actions) page, find the latest successful run
+2. Download the **sango-fighter-standalone** artifact
+3. Unzip and double-click `index.html` — play immediately in your browser! 🎉
+
+> This is a self-contained single HTML file with all CSS and JS inlined. No server, no Node.js, no build step needed.
+
+### Developer Setup
+
+#### Prerequisites
 
 - [Node.js](https://nodejs.org/) >= 18.x
 - npm >= 9.x
 
-### Installation
+#### Installation
 
 ```bash
 # Clone the repository
@@ -55,9 +65,12 @@ Open `http://localhost:3000` in your browser to play.
 ### Build for Production
 
 ```bash
-npm run build     # Build optimized output to dist/
-npm run preview   # Preview the production build
+npm run build          # Build optimized output to dist/
+npm run build:single   # Build standalone single-file HTML to dist-single/
+npm run preview        # Preview the production build
 ```
+
+The `build:single` command produces a single `index.html` in `dist-single/` that can be opened directly in any browser — no web server required.
 
 ---
 
@@ -222,6 +235,7 @@ G3KingFight/
 |--------|-------------|
 | `npm run dev` | Start Vite dev server with HMR |
 | `npm run build` | TypeScript check + production build |
+| `npm run build:single` | Build standalone single-file HTML |
 | `npm run preview` | Preview production build |
 | `npm run lint` | Run ESLint on src/ |
 | `npm run lint:fix` | Auto-fix ESLint issues |
