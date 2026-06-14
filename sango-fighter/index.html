@@ -1,107 +1,67 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>武將爭霸 Sango Fighter</title>
-  <link rel="stylesheet" href="style.css">
-  <!-- Phaser 3 CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3.87.0/dist/phaser.min.js"></script>
-  <style>
-    /* Start screen overlay — displayed on top of everything */
-    #start-screen {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      background: linear-gradient(135deg, #0f0c29, #1a1533, #24243e);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 24px;
-    }
-    #start-screen .title {
-      font-size: 52px;
-      color: #ffd700;
-      text-shadow: 2px 2px 6px rgba(0,0,0,0.8), 0 0 20px rgba(255,215,0,0.3);
-      letter-spacing: 8px;
-    }
-    #start-screen .subtitle {
-      font-size: 18px;
-      color: #c9a84c;
-      letter-spacing: 4px;
-    }
-    #start-btn {
-      margin-top: 20px;
-      padding: 16px 48px;
-      font-size: 24px;
-      font-weight: bold;
-      color: #fff;
-      background: linear-gradient(135deg, #b22222, #8b0000);
-      border: 2px solid #ffd700;
-      border-radius: 8px;
-      cursor: pointer;
-      letter-spacing: 4px;
-      transition: transform 0.15s, box-shadow 0.15s;
-    }
-    #start-btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 20px rgba(255,215,0,0.5);
-    }
-    .controls-info {
-      display: flex;
-      gap: 40px;
-      margin-top: 16px;
-      font-size: 14px;
-      color: #aaa;
-    }
-    .controls-info h4 {
-      color: #ffd700;
-      margin-bottom: 6px;
-    }
-    .controls-info div {
-      margin: 2px 0;
-    }
-    /* Phaser canvas container */
-    #game-container {
-      display: none;
-      width: 1024px;
-      height: 576px;
-      margin: 0 auto;
-    }
-    /* Version badge */
-    #versionDisplay {
-      position: fixed;
-      bottom: 8px;
-      right: 12px;
-      font-size: 12px;
-      color: #666;
-      z-index: 200;
-    }
-  </style>
-</head>
-<body>
-  <!-- ===== Start Screen (HTML UI) ===== -->
-  <div id="start-screen">
-    <h1 class="title">武將爭霸</h1>
-    <h2 class="subtitle">Sango Fighter — Phaser 3 Edition</h2>
-    <button id="start-btn">開始遊戲 START</button>
-    <div class="controls-info">
-      <div>
-        <h4>P1 操作</h4>
-        <div>A / D — 左右移動</div>
-        <div>W — 跳躍</div>
-        <div>J — 攻擊</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>三國志格鬥 G3KingFight</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <canvas id="gameCanvas" width="1024" height="576"></canvas>
+
+      <div id="title-screen" class="screen" style="background: linear-gradient(135deg, #0f0c29, #1a1533, #24243e); border: 2px solid #c9a84c; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px;">
+        <h1 class="title">三國志格鬥</h1>
+        <h2 class="subtitle">G3KingFight — Vanilla JavaScript Edition</h2>
+        <div style="display:flex;flex-direction:column;gap:12px;align-items:center;">
+          <button id="btn-vs-mode" class="mode-btn">VS Mode</button>
+          <button id="btn-story-mode" class="mode-btn story-mode-btn">Story Mode</button>
+          <button id="btn-title-move-list" class="mode-btn movelist-btn">Move List</button>
+          <button id="btn-title-stage-list" class="mode-btn stagelist-btn">Stage List</button>
+        </div>
+        <div id="difficultySelect" class="difficulty-select">
+          <span class="difficulty-label">難度：</span>
+          <button class="diff-btn selected" data-diff="easy">初級</button>
+          <button class="diff-btn" data-diff="normal">中級</button>
+          <button class="diff-btn" data-diff="hard">高級</button>
+        </div>
+        <div class="controls-info">
+          <div class="controls-column">
+            <h4>P1</h4>
+            <div>WASD 移動</div>
+            <div>J/K/L/U 攻擊</div>
+            <div>M 招式表 / P 暫停</div>
+          </div>
+          <div class="controls-column">
+            <h4>P2</h4>
+            <div>方向鍵移動</div>
+            <div>Num1/2/3/0 攻擊</div>
+            <div>Enter 確認</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="character-select" class="hidden"></div>
+      <div id="stage-select" class="hidden"></div>
+      <div id="story-mode" class="hidden"></div>
+      <div id="dialog-box" class="hidden"></div>
+      <div id="move-list-overlay" class="hidden"></div>
+      <div id="pause-menu" class="hidden"></div>
+      <div id="mobile-controls" class="hidden"></div>
+      <div id="loading-screen" class="screen hidden" style="position:absolute;inset:0;background:rgba(10,10,26,0.96);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;z-index:90;">
+        <h2 class="title" style="font-size:32px;">載入中...</h2>
+        <div class="subtitle">Preparing Sango Fighter</div>
       </div>
     </div>
-  </div>
 
-  <!-- ===== Phaser Game Container ===== -->
-  <div id="game-container"></div>
-
-  <!-- Version Display -->
-  <div id="versionDisplay">V12-Phaser3</div>
-
-  <script src="game.js"></script>
-</body>
+    <script defer src="constants.js"></script>
+    <script defer src="characters.js"></script>
+    <script defer src="stories.js"></script>
+    <script defer src="spriteGenerator.js"></script>
+    <script defer src="classes.js"></script>
+    <script defer src="renderer.js"></script>
+    <script defer src="ai.js"></script>
+    <script defer src="ui.js"></script>
+    <script defer src="game.js"></script>
+  </body>
 </html>
