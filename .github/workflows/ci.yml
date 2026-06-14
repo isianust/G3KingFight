@@ -48,3 +48,33 @@ jobs:
         with:
           name: dist
           path: dist/
+
+      # Build standalone single-file HTML (download & play)
+      - run: npm run build:single
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sango-fighter-standalone
+          path: dist-single/index.html
+
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+      - id: deployment
+        uses: actions/deploy-pages@v4

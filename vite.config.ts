@@ -1,12 +1,16 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import { viteSingleFile } from 'vite-plugin-singlefile';
+
+const isSingleFile = process.env.BUILD_SINGLE === 'true';
 
 export default defineConfig({
   root: '.',
   base: './',
+  plugins: isSingleFile ? [viteSingleFile()] : [],
   build: {
-    outDir: 'dist',
-    sourcemap: true,
+    outDir: isSingleFile ? 'dist-single' : 'dist',
+    sourcemap: !isSingleFile,
     target: 'es2020',
     rollupOptions: {
       input: resolve(__dirname, 'index.html'),
